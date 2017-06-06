@@ -1,14 +1,14 @@
-#ifndef QRWPROPERTYCONTROLLER_H
-#define QRWPROPERTYCONTROLLER_H
-#include <qcore/controller/properties/qropropertycontroller.h>
+#ifndef QROPROPERTYCONTROLLER_H
+#define QROPROPERTYCONTROLLER_H
+#include <qcore/controller/qnodecontroller.h>
 #include <QVariant>
 
-class QRWPropertyController :
-        public QROPropertyController
+class QROPropertyController :
+        public QNodeController
 {
     Q_OBJECT
 public:
-    QRWPropertyController(NodeType_t node_type,
+    QROPropertyController(NodeType_t node_type,
                           NodeID_t node_id = NodeIDNull,
                           NodeID_t parent_id = NodeIDNull,
                           const QString & name = QString(),
@@ -21,10 +21,25 @@ public:
 
     virtual NodeControllerForm * createForm(QWidget * parent) override;
 
-    bool set(const QVariant & value);
+    virtual NodeType_t type() const override;
+
+    inline bool update() { return readData(); }
+
+    inline QVariant get() const { return _value; }
+
+signals:
+    void updated();
 
 protected:
+    virtual bool eventSetup(const ControlPacket &) override;
+
     virtual bool eventData(const ControlPacket & packet) override;
+
+    inline void setValue(const QVariant & value) { _value = value; }
+
+private:
+    NodeType_t  _type;
+    QVariant    _value;
 };
 
-#endif // QRWPROPERTYCONTROLLER_H
+#endif // QROPROPERTYCONTROLLER_H

@@ -1,6 +1,6 @@
 #include "qfloatrwpropertyform.h"
 #include "ui_qfloatrwpropertyform.h"
-#include <qcore/controller/properties/qrwpropertycontroller.h>
+#include <qcore/controller/qrwpropertycontroller.h>
 
 QFloatRWPropertyForm::QFloatRWPropertyForm(QRWPropertyController * prop,
                                        QWidget * parent) :

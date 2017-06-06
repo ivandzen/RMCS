@@ -27,7 +27,7 @@ protected:
 
     virtual bool eventData(const ControlPacket & packet) override;
 
-    virtual void toggledEvent(bool enabled) = 0;
+    virtual void toggledEvent(bool enabled) { (void)enabled; }
 
     virtual bool eventInit(DeviceController * controller) override;
 

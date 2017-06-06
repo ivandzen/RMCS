@@ -1,6 +1,6 @@
 #include "qboolrwpropertyform.h"
 #include "ui_qboolrwpropertyform.h"
-#include <qcore/controller/properties/qrwpropertycontroller.h>
+#include <qcore/controller/qrwpropertycontroller.h>
 
 QBoolRWPropertyForm::QBoolRWPropertyForm(QRWPropertyController * prop,
                                          QWidget * parent) :

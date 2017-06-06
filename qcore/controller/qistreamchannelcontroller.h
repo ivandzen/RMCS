@@ -20,14 +20,16 @@ public:
 
     inline Length_t dataLength() const { return _dataLength; }
 
-    virtual Data * data() const = 0;
+    //virtual const Data * data() const = 0;
+
+    virtual void fill(ArrayRef<Data> & arr) const = 0;
 
 protected:
     virtual bool eventSetup(const ControlPacket & packet) override;
 
     virtual bool eventData(const ControlPacket & packet) override;
 
-    virtual void toggledEvent(bool enabled) = 0;
+    virtual void toggledEvent(bool enabled) { (void)enabled; }
 
     virtual bool eventInit(DeviceController * controller) override;
 

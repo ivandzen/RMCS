@@ -68,14 +68,11 @@ void QIStreamController::processChannels(const ArrayRef<Data> & buffer)
     if(!isStreamEnabled())
         return;
 
-    for(auto channel : _channels)
+    Data * ptr = buffer.data();
+
+    for(QIStreamChannelController * channel : _channels)
     {
-        Data * channel_data = channel->data();
-        if(channel_data)
-            memcpy(buffer.data() + channel->dataOffset(),
-                   channel_data,
-                   channel->dataLength());
-        else
-            logMessage("channel controller return null pointer");
+        ArrayRef<Data> arr(ptr + channel->dataOffset(), channel->dataLength());
+        channel->fill(arr);
     }
 }

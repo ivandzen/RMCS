@@ -12,6 +12,8 @@ class QNodeControllerFactory :
 public:
     explicit QNodeControllerFactory(QObject *parent = 0);
 
+    virtual ~QNodeControllerFactory();
+
     bool loadPrototype(const QString & filename);
 
     bool addPrototype(QNodeController * node);

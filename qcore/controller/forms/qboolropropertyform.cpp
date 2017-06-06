@@ -1,6 +1,6 @@
 #include "qboolropropertyform.h"
 #include "ui_qboolropropertyform.h"
-#include <qcore/controller/properties/qropropertycontroller.h>
+#include <qcore/controller/qropropertycontroller.h>
 
 QBoolROPropertyForm::QBoolROPropertyForm(QROPropertyController * prop,
                                          QWidget *parent) :

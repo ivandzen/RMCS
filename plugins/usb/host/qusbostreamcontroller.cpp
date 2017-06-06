@@ -44,7 +44,7 @@ void QUsbOStreamProcessor::run()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void ostreamTransferCallback(libusb_transfer * transfer)
+void __attribute__((__stdcall__)) ostreamTransferCallback(libusb_transfer * transfer)
 {
     reinterpret_cast<QUsbOStreamController*>(transfer->user_data)->transferCplt(transfer);
 }

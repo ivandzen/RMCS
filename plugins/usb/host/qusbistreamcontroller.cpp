@@ -31,7 +31,7 @@ void QUsbIStreamProcessor::run()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void istreamTransferCallback(libusb_transfer * transfer)
+void __attribute__((__stdcall__)) istreamTransferCallback(libusb_transfer * transfer)
 {
     reinterpret_cast<QUsbIStreamController*>(transfer->user_data)
             ->transferCplt(transfer);

@@ -3,27 +3,26 @@
 #include <QDebug>
 #include <QPluginLoader>
 
-#include <qcore/controller/qdefaultnode.h>
-#include <qcore/controller/channels/channels.h>
-#include <qcore/controller/properties/qropropertycontroller.h>
-#include <qcore/controller/properties/qrwpropertycontroller.h>
+#include <core/common/defaultnodes.h>
+#include <qcore/controller/qiparamcontroller.h>
+#include <qcore/controller/qoparamcontroller.h>
+#include <qcore/controller/qropropertycontroller.h>
+#include <qcore/controller/qrwpropertycontroller.h>
 
 QNodeControllerFactory::QNodeControllerFactory(QObject *parent) :
     QObject(parent)
 {
-    addPrototype(new QDefaultNode());
+    addPrototype(new QIParamController(NODE_TYPE_UINT8_IPARAM));
+    addPrototype(new QIParamController(NODE_TYPE_UINT16_IPARAM));
+    addPrototype(new QIParamController(NODE_TYPE_UINT32_IPARAM));
+    addPrototype(new QIParamController(NODE_TYPE_FLOAT32_IPARAM));
+    addPrototype(new QIParamController(NODE_TYPE_FLOAT64_IPARAM));
 
-    addPrototype(new QUInt8IStreamChannel());
-    addPrototype(new QUInt16IStreamChannel());
-    addPrototype(new QUInt32IStreamChannel());
-    addPrototype(new QFloat32IStreamChannel());
-    addPrototype(new QFloat64IStreamChannel());
-
-    addPrototype(new QUInt8OStreamChannel());
-    addPrototype(new QUInt16OStreamChannel());
-    addPrototype(new QUInt32OStreamChannel());
-    addPrototype(new QFloat32OStreamChannel());
-    addPrototype(new QFloat64OStreamChannel());
+    addPrototype(new QOParamController(NODE_TYPE_UINT8_OPARAM));
+    addPrototype(new QOParamController(NODE_TYPE_UINT16_OPARAM));
+    addPrototype(new QOParamController(NODE_TYPE_UINT32_OPARAM));
+    addPrototype(new QOParamController(NODE_TYPE_FLOAT32_OPARAM));
+    addPrototype(new QOParamController(NODE_TYPE_FLOAT64_OPARAM));
 
     addPrototype(new QROPropertyController(NODE_TYPE_BOOL_PROP_RDONLY));
     addPrototype(new QROPropertyController(NODE_TYPE_INT_PROP_RDONLY));
@@ -32,6 +31,12 @@ QNodeControllerFactory::QNodeControllerFactory(QObject *parent) :
     addPrototype(new QRWPropertyController(NODE_TYPE_BOOL_PROP));
     addPrototype(new QRWPropertyController(NODE_TYPE_INT_PROP));
     addPrototype(new QRWPropertyController(NODE_TYPE_FLOAT_PROP));
+}
+
+QNodeControllerFactory::~QNodeControllerFactory()
+{
+    for(QNodeController * controller : _prototypes)
+        controller->deleteLater();
 }
 
 bool QNodeControllerFactory::loadPrototype(const QString & filename)

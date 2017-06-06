@@ -1,3 +1,5 @@
-LIBS += $$BUILD_PREFIX/lib/librmcs_qcore.a
+LIBS += -L$$BUILD_PREFIX/lib/ -lrmcs_qcore
 
 DEPENDPATH += $$PWD
+
+INCLUDEPATH += $$PWD/../

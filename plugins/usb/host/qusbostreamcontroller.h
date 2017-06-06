@@ -1,28 +1,26 @@
-#ifndef QUSBISTREAMNODE_H
-#define QUSBISTREAMNODE_H
-#include <qcore/controller/qistreamcontroller.h>
+#ifndef QUSBOSTREAMCONTROLLER_H
+#define QUSBOSTREAMCONTROLLER_H
+#include <qcore/controller/qostreamcontroller.h>
 #include <usb/common/common.h>
 #include <libusb.h>
 #include <QThread>
 #include <QSemaphore>
-#include <QMutex>
 #include <QMutexLocker>
 
-class QUsbIStreamController;
+class QUsbOStreamController;
 
-class QUsbIStreamProcessor :
+class QUsbOStreamProcessor :
         public QThread
 {
     Q_OBJECT
-
 public:
-    explicit QUsbIStreamProcessor(QUsbIStreamController * controller);
+    explicit QUsbOStreamProcessor(QUsbOStreamController * controller);
 
     inline void start()
     {
         QMutexLocker locker(&_mutex);
-        if(_running)
-            return;
+        if(_running) return;
+        _running = true;
         QThread::start();
     }
 
@@ -35,22 +33,26 @@ protected:
     virtual void run() override;
 
 private:
-    QUsbIStreamController * _controller;
     bool        _running;
     QMutex      _mutex;
+    QUsbOStreamController * _controller;
+    Length_t    _currentPacket;
 };
 
 ///////////////////////////////////////////////////////////////////////
 
-class QUsbIStreamController :
-        public QIStreamController
+class QUsbOStreamController :
+        public QOStreamController
 {
     Q_OBJECT
-    friend class QUsbIStreamProcessor;
-    friend void istreamTransferCallback(libusb_transfer * transfer);
+    friend class QUsbOStreamProcessor;
+    friend void __attribute__((__stdcall__)) ostreamTransferCallback(libusb_transfer * transfer);
 public:
-    QUsbIStreamController(libusb_device_handle * usb_handle,
-                          QDeviceConnection *dev = nullptr,
+    static const Length_t NUM_PACKETS = 64;
+    static const Length_t PACKETS_PER_TRANSFER = 8;
+
+    QUsbOStreamController(libusb_device_handle * usb_handle,
+                          QDeviceConnection * conn = nullptr,
                           NodeID_t node_id = NodeIDNull,
                           NodeID_t parent_id = NodeIDNull,
                           const QString & name = QString());
@@ -60,7 +62,7 @@ public:
                                              const QString & name,
                                              QDeviceConnection * conn) override;
 
-    virtual NodeType_t type() const final override { return NODE_TYPE_USBISTREAM; }
+    virtual NodeType_t type() const final override { return NODE_TYPE_USBOSTREAM; }
 
 protected:
     virtual void eventDestroy() override;
@@ -71,25 +73,21 @@ protected:
 
     virtual void eventStreamToggled(bool enabled) override;
 
-    virtual Length_t packetSize() const override { return _buffer.size(); }
-
 private:
-    inline void acquireUsedPacket() { _usedPacket.acquire(1); }
-
-    inline void releaseFreePacket() { _freePacket.release(1); }
-
-    inline uint32_t timeout() { return 10; } //! @todo
+    inline unsigned int timeout() const { return PACKETS_PER_TRANSFER; }
 
     void beginTransfer();
 
     void transferCplt(libusb_transfer * tfer);
 
-    QSemaphore              _usedPacket;
-    QSemaphore              _freePacket;
-    QUsbIStreamProcessor *  _processor;
+    QUsbOStreamProcessor *  _processor;
     libusb_device_handle *  _handle;
     uint8_t                 _epAddr;
+    Length_t                _packetSize;
     QByteArray              _buffer;
+    QSemaphore              _freePackets;
+    QSemaphore              _usedPackets;
+    Length_t                _currentPacket;
 };
 
-#endif // QUSBISTREAMNODE_H
+#endif // QUSBOSTREAMCONTROLLER_H

@@ -1,6 +1,6 @@
 #include "qfloatropropertyform.h"
 #include "ui_qfloatropropertyform.h"
-#include <qcore/controller/properties/qropropertycontroller.h>
+#include <qcore/controller/qropropertycontroller.h>
 
 QFloatROPropertyForm::QFloatROPropertyForm(QROPropertyController *prop,
                                            QWidget *parent) :

@@ -2,4 +2,4 @@ TEMPLATE = subdirs
 
 SUBDIRS +=  core \
             qcore \
-            usb \
+            plugins \

@@ -28,6 +28,11 @@ public:
         memcpy(target, _data, _size);
     }
 
+    inline void copyFrom(const T * source)
+    {
+        memcpy(_data, source, _size);
+    }
+
     inline T * data() const { return _data; }
 
 private:

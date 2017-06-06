@@ -1,6 +1,6 @@
 #include "qintrwpropertyform.h"
 #include "ui_qintrwpropertyform.h"
-#include <qcore/controller/properties/qrwpropertycontroller.h>
+#include <qcore/controller/qrwpropertycontroller.h>
 
 QIntRWPropertyForm::QIntRWPropertyForm(QRWPropertyController * prop,
                                        QWidget * parent) :

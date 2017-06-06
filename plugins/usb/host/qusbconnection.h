@@ -15,7 +15,7 @@ class QUsbConnection :
 {
     Q_OBJECT
 
-    friend void controlTransferCallback(struct libusb_transfer * transfer);
+    friend void __attribute__((__stdcall__)) controlTransferCallback(struct libusb_transfer * transfer);
 public:
     QUsbConnection(libusb_device_handle * handle,
                    QObject * parent = nullptr);

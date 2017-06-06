@@ -5,7 +5,7 @@ QT += core network widgets qml
 
 TEMPLATE = lib
 
-CONFIG += staticlib c++11
+CONFIG += c++11
 
 TARGET = rmcs_qcore
 
@@ -26,30 +26,18 @@ HEADERS += \
     controller/forms/connfactoriesform.h \
     controller/qdevicecontrollerfactory.h \
     controller/supervisor.h \
-    controller/qrmcsscriptengine.h \
     controller/qdeviceconnection.h \
     controller/qnodecontrollerfactory.h \
-    controller/qdefaultnode.h \
-    controller/channels/quint8istreamchannel.h \
-    controller/channels/quint16istreamchannel.h \
-    controller/channels/quint32istreamchannel.h \
-    controller/channels/qfloat32istreamchannel.h \
-    controller/channels/qfloat64istreamchannel.h \
-    controller/channels/quint8ostreamchannel.h \
-    controller/channels/quint16ostreamchannel.h \
-    controller/channels/quint32ostreamchannel.h \
-    controller/channels/qfloat32ostreamchannel.h \
-    controller/channels/qfloat64ostreamchannel.h \
-    controller/channels/channels.h \
-    controller/properties/boolproperty.h \
-    controller/properties/qropropertycontroller.h \
-    controller/properties/qrwpropertycontroller.h \
     controller/forms/qboolropropertyform.h \
     controller/forms/qintropropertyform.h \
     controller/forms/qfloatropropertyform.h \
     controller/forms/qboolrwpropertyform.h \
     controller/forms/qintrwpropertyform.h \
-    controller/forms/qfloatrwpropertyform.h
+    controller/forms/qfloatrwpropertyform.h \
+    controller/qoparamcontroller.h \
+    controller/qiparamcontroller.h \
+    controller/qropropertycontroller.h \
+    controller/qrwpropertycontroller.h
     #device/tcpistreamnode.h \
     #controller/qtcpistreamcontroller.h
 
@@ -67,29 +55,18 @@ SOURCES += \
     controller/forms/istreamform.cpp \
     controller/forms/connfactoriesform.cpp \
     controller/supervisor.cpp \
-    controller/qrmcsscriptengine.cpp \
     controller/qdeviceconnection.cpp \
     controller/qnodecontrollerfactory.cpp \
-    controller/qdefaultnode.cpp \
-    controller/channels/quint8istreamchannel.cpp \
-    controller/channels/quint16istreamchannel.cpp \
-    controller/channels/quint32istreamchannel.cpp \
-    controller/channels/qfloat32istreamchannel.cpp \
-    controller/channels/qfloat64istreamchannel.cpp \
-    controller/channels/quint8ostreamchannel.cpp \
-    controller/channels/quint16ostreamchannel.cpp \
-    controller/channels/quint32ostreamchannel.cpp \
-    controller/channels/qfloat32ostreamchannel.cpp \
-    controller/channels/qfloat64ostreamchannel.cpp \
-    controller/properties/boolproperty.cpp \
-    controller/properties/qropropertycontroller.cpp \
-    controller/properties/qrwpropertycontroller.cpp \
     controller/forms/qboolropropertyform.cpp \
     controller/forms/qintropropertyform.cpp \
     controller/forms/qfloatropropertyform.cpp \
     controller/forms/qboolrwpropertyform.cpp \
     controller/forms/qintrwpropertyform.cpp \
-    controller/forms/qfloatrwpropertyform.cpp
+    controller/forms/qfloatrwpropertyform.cpp \
+    controller/qoparamcontroller.cpp \
+    controller/qiparamcontroller.cpp \
+    controller/qropropertycontroller.cpp \
+    controller/qrwpropertycontroller.cpp
     #device/tcpistreamnode.cpp \
     #controller/qtcpistreamcontroller.cpp
 

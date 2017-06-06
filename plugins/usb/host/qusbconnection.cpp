@@ -20,7 +20,7 @@ QUsbConnection::QUsbConnection(libusb_device_handle * handle,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void controlTransferCallback(struct libusb_transfer * transfer)
+void __attribute__((__stdcall__)) controlTransferCallback(struct libusb_transfer * transfer)
 {
     QUsbConnection * connection =
             reinterpret_cast<QUsbConnection*>(transfer->user_data);
