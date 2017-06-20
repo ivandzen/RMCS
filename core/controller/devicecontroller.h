@@ -76,7 +76,9 @@ protected:
 
     virtual void updatedEvent() {}
 
-    virtual void initializedEvent() {}
+    virtual void beforeInitNodes() {}
+
+    virtual void afterInitNodes() {}
 
     virtual void errorEvent() {}
 

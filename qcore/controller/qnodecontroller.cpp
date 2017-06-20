@@ -10,7 +10,18 @@ QNodeController::QNodeController(NodeID_t node_id,
     QObject(nullptr),
     NodeController(node_id, parent_id, name.toStdString(), dev)
 {
+    setObjectName(name);
+}
 
+////////////////////////////////////////////////////////////////////////////////
+
+void QNodeController::update()
+{
+    readData();
+    QObjectList childs = children();
+    for(QObject * obj : childs)
+        if(QNodeController * child = qobject_cast<QNodeController*>(obj))
+            child->update();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -24,6 +35,7 @@ void QNodeController::eventDestroy()
 
 bool QNodeController::eventInit(DeviceController * controller)
 {
+    (void)controller;
     emit initialized();
     return true;
 }
@@ -32,7 +44,7 @@ bool QNodeController::eventInit(DeviceController * controller)
 
 void QNodeController::eventStatus(NodeStatus_t status)
 {
-    //! @todo
+    (void)status;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

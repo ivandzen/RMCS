@@ -19,8 +19,6 @@ public:
                                              const QString & name,
                                              QDeviceConnection * device) override;
 
-    virtual NodeControllerForm * createForm(QWidget * parent) override;
-
     bool set(const QVariant & value);
 
 protected:

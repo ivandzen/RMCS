@@ -46,10 +46,10 @@ class QUsbOStreamController :
 {
     Q_OBJECT
     friend class QUsbOStreamProcessor;
-    friend void __attribute__((__stdcall__)) ostreamTransferCallback(libusb_transfer * transfer);
+    friend void CALLBACK_ATTRIB ostreamTransferCallback(libusb_transfer * transfer);
 public:
-    static const Length_t NUM_PACKETS = 64;
-    static const Length_t PACKETS_PER_TRANSFER = 8;
+    static const Length_t NUM_PACKETS = 1;
+    static const Length_t PACKETS_PER_TRANSFER = 1;
 
     QUsbOStreamController(libusb_device_handle * usb_handle,
                           QDeviceConnection * conn = nullptr,

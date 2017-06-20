@@ -1,11 +1,11 @@
 #ifndef RMCSUSBDEVICE_H
 #define RMCSUSBDEVICE_H
 
-#include <usb/common/common.h>
-#include <usb/device/usbdevice.h>
 #include <core/device/device.h>
-#include <usb/device/usbistreamnode.h>
-#include <usb/device/usbostreamnode.h>
+#include <plugins/usb/common/common.h>
+#include <plugins/usb/device/usbdevice.h>
+#include <plugins/usb/device/usbistreamnode.h>
+#include <plugins/usb/device/usbostreamnode.h>
 
 class RMCSUsbDevice :
         public UsbDevice

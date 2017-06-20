@@ -44,7 +44,7 @@ void QUsbOStreamProcessor::run()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void __attribute__((__stdcall__)) ostreamTransferCallback(libusb_transfer * transfer)
+void CALLBACK_ATTRIB ostreamTransferCallback(libusb_transfer * transfer)
 {
     reinterpret_cast<QUsbOStreamController*>(transfer->user_data)->transferCplt(transfer);
 }
@@ -88,11 +88,9 @@ void QUsbOStreamController::eventDestroy()
 
 bool QUsbOStreamController::eventInit(DeviceController * controller)
 {
-    if(!QOStreamController::eventInit(controller))
-        return false;
     _processor = new QUsbOStreamProcessor(this);
     _processor->moveToThread(thread());
-    return true;
+    return QOStreamController::eventInit(controller);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -152,10 +150,10 @@ void QUsbOStreamController::beginTransfer()
 
 void QUsbOStreamController::transferCplt(libusb_transfer *tfer)
 {
+    _usedPackets.release(tfer->num_iso_packets);
     _currentPacket += tfer->num_iso_packets;
     if(_currentPacket + PACKETS_PER_TRANSFER >= NUM_PACKETS)
         _currentPacket = 0;
-    _usedPackets.release(tfer->num_iso_packets);
     switch(tfer->status)
     {
     case LIBUSB_TRANSFER_COMPLETED :

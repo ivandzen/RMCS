@@ -52,8 +52,7 @@ public:
 
     virtual QStringList devicesNames() const override;
 
-    virtual QDeviceController * open(QNodeControllerFactory * factory,
-                                     const QString & device_name) override;
+    virtual QDeviceController * getDevice(const QString & device_name) override;
 
     virtual QWidget * controlWidget() const override { return nullptr; }
 
@@ -66,7 +65,6 @@ private:
 
     void closeConnection(const QUsbDevice & dev);
 
-    QNodeControllerFactory *            _factory;
     QUsbCoreThread *                    _coreThread;
     libusb_context *                    _context;
     QHash<QUsbDevice, QUsbConnection*>  _connections;

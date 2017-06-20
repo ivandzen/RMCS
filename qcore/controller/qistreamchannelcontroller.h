@@ -20,9 +20,7 @@ public:
 
     inline Length_t dataLength() const { return _dataLength; }
 
-    //virtual const Data * data() const = 0;
-
-    virtual void fill(ArrayRef<Data> & arr) const = 0;
+    virtual void fill(ArrayRef<Data> & arr) = 0;
 
 protected:
     virtual bool eventSetup(const ControlPacket & packet) override;

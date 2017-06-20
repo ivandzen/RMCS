@@ -47,7 +47,7 @@ class QUsbIStreamController :
 {
     Q_OBJECT
     friend class QUsbIStreamProcessor;
-    friend void __attribute__((__stdcall__)) istreamTransferCallback(libusb_transfer * transfer);
+    friend void CALLBACK_ATTRIB istreamTransferCallback(libusb_transfer * transfer);
 public:
     QUsbIStreamController(libusb_device_handle * usb_handle,
                           QDeviceConnection *dev = nullptr,

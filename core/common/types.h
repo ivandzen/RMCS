@@ -29,12 +29,16 @@ enum NodeStatus
     NODE_STAT_ERR
 };
 
+#pragma pack(push, 1)
+
 template<typename T>
 struct ParamData
 {
     uint8_t id;
     T value;
 };
+
+#pragma pack(pop)
 
 
 #endif //TYPES_H

@@ -20,20 +20,13 @@ bool OStreamNode::addChannel(OStreamChannel * channel)
 
 bool OStreamNode::nodeDataRequested(ControlPacket & packet) const
 {
-    DataPacket<bool> data(packet);
-    return data.init(_enabled);
+    (void)packet;
+    return true;
 }
 
 bool OStreamNode::nodeDataReceived(const ControlPacket & packet)
 {
-    DataPacket<bool> data(packet);
-    if(!data.isValid())
-        return false;
-    if(_enabled != *data.get())
-    {
-        _enabled = *data.get();
-        streamToggled(_enabled);
-    }
+    (void)packet;
     return true;
 }
 
@@ -42,5 +35,15 @@ bool OStreamNode::init()
     if(!Node::init())
         return false;
     _buffer.resize(_packetSize);
+    return true;
+}
+
+bool OStreamNode::toggleStream(bool enabled)
+{
+    if(_enabled != enabled)
+    {
+        _enabled = enabled;
+        streamToggled(_enabled);
+    }
     return true;
 }

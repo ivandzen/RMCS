@@ -4,6 +4,7 @@
 #include <QPluginLoader>
 
 #include <core/common/defaultnodes.h>
+#include <qcore/controller/qdefaultcontroller.h>
 #include <qcore/controller/qiparamcontroller.h>
 #include <qcore/controller/qoparamcontroller.h>
 #include <qcore/controller/qropropertycontroller.h>
@@ -12,15 +13,17 @@
 QNodeControllerFactory::QNodeControllerFactory(QObject *parent) :
     QObject(parent)
 {
-    addPrototype(new QIParamController(NODE_TYPE_UINT8_IPARAM));
-    addPrototype(new QIParamController(NODE_TYPE_UINT16_IPARAM));
-    addPrototype(new QIParamController(NODE_TYPE_UINT32_IPARAM));
+    addPrototype(new QDefaultController());
+
+    addPrototype(new QIParamController(NODE_TYPE_INT8_IPARAM));
+    addPrototype(new QIParamController(NODE_TYPE_INT16_IPARAM));
+    addPrototype(new QIParamController(NODE_TYPE_INT32_IPARAM));
     addPrototype(new QIParamController(NODE_TYPE_FLOAT32_IPARAM));
     addPrototype(new QIParamController(NODE_TYPE_FLOAT64_IPARAM));
 
-    addPrototype(new QOParamController(NODE_TYPE_UINT8_OPARAM));
-    addPrototype(new QOParamController(NODE_TYPE_UINT16_OPARAM));
-    addPrototype(new QOParamController(NODE_TYPE_UINT32_OPARAM));
+    addPrototype(new QOParamController(NODE_TYPE_INT8_OPARAM));
+    addPrototype(new QOParamController(NODE_TYPE_INT16_OPARAM));
+    addPrototype(new QOParamController(NODE_TYPE_INT32_OPARAM));
     addPrototype(new QOParamController(NODE_TYPE_FLOAT32_OPARAM));
     addPrototype(new QOParamController(NODE_TYPE_FLOAT64_OPARAM));
 

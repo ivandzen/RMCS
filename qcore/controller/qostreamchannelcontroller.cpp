@@ -64,15 +64,13 @@ bool QOStreamChannelController::eventData(const ControlPacket &packet)
 
 bool QOStreamChannelController::eventInit(DeviceController * dev)
 {
-    if(!QNodeController::eventInit(dev))
-        return false;
-
     QDeviceController * qdev = (QDeviceController*)dev; //! @attention
 
     QOStreamController * stream =
             qobject_cast<QOStreamController*>(qdev->getNode(_streamId));
 
-    if(stream == nullptr)
+    if((stream == nullptr) || !stream->addChannel(this))
         return false;
-    return stream->addChannel(this);
+
+    return QNodeController::eventInit(dev);
 }

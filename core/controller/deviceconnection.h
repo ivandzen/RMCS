@@ -23,6 +23,8 @@ public:
         return true;
     }
 
+    inline DeviceController * controller() const { return _controller; }
+
     virtual ~DeviceConnection() {}
 
     virtual ControlPacket beginCtlTransfer(Length_t max_length) = 0;
@@ -47,8 +49,6 @@ protected:
     void disconnectEvent() const;
 
     void restartEvent() const;
-
-    inline DeviceController * controller() const { return _controller; }
 
 private:
     DeviceController * _controller;

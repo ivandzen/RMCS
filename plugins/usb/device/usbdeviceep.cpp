@@ -1,5 +1,5 @@
 #include "usbdeviceep.h"
-#include <usb/device/usbdevice.h>
+#include <plugins/usb/device/usbdevice.h>
 
 UsbDeviceEP::UsbDeviceEP(UsbDeviceEP::Type type,
                          uint8_t addr,

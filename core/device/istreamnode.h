@@ -2,6 +2,7 @@
 #define ISTREAMNODE_H
 #include <core/common/inputstream.h>
 #include <core/device/node.h>
+#include <core/device/properties.h>
 
 class IStreamChannel;
 
@@ -10,8 +11,6 @@ class IStreamNode :
 {
     /// For every specific type of IStreamNode
     /// next methods must be implemented :
-    ///     virtual bool lock()
-    ///     virtual void unlock()
     ///     virtual bool settingsRequested(ControlPacket & packet)
     ///     virtual void streamToggled(bool enabled)
 public:
@@ -45,6 +44,12 @@ protected:
     virtual bool init() override;
 
 private:
+    BOOL_PROP(Enabled, false,
+              [this]() { return _enabled; },
+              [this](bool enabled) { return toggleStream(enabled); })
+
+    bool toggleStream(bool enabled);
+
     bool        				_enabled;
     Length_t					_numPackets;
     Length_t    				_packetSize;

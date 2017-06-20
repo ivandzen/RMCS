@@ -27,12 +27,14 @@ SOURCES += \
 win32 {
     INCLUDEPATH += ../ C:\libusb-1.0.21\include\libusb-1.0
     LIBS += C:\libusb-1.0.21\MinGW32\static\libusb-1.0.a
+    DEFINES += "CALLBACK_ATTRIB=__attribute__((__stdcall__))"
 }
 
 
 unix {
     INCLUDEPATH += ../ /usr/include/libusb-1.0
     LIBS += -lusb-1.0
+    DEFINES += "CALLBACK_ATTRIB="
 }
 
 DISTFILES += \

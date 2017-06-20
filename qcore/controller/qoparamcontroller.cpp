@@ -21,41 +21,40 @@ QNodeController * QOParamController::createInstance(NodeID_t node_id,
                                  name, device);
 }
 
-NodeControllerForm * QOParamController::createForm(QWidget * parent)
-{
-
-}
-
 void QOParamController::streamDataReceived(Data * data)
 {
     switch(_type)
     {
-    case NODE_TYPE_UINT8_OPARAM :
+    case NODE_TYPE_INT8_OPARAM :
     {
-        ParamData<uint8_t> * pdata = reinterpret_cast<ParamData<uint8_t>*>(data);
+        ParamData<int8_t> * pdata = reinterpret_cast<ParamData<int8_t>*>(data);
         if(pdata->id == _lastId)
             return;
-        emit valueChanged(pdata->value);
         _lastId = pdata->id;
+        _value = QVariant(pdata->value);
+        emit valueChanged(_value);
         return;
     }
 
-    case NODE_TYPE_UINT16_OPARAM :
+    case NODE_TYPE_INT16_OPARAM :
     {
-        ParamData<uint16_t> * pdata = reinterpret_cast<ParamData<uint16_t>*>(data);
+        ParamData<int16_t> * pdata = reinterpret_cast<ParamData<int16_t>*>(data);
         if(pdata->id == _lastId)
             return;
-        emit valueChanged(pdata->value);
         _lastId = pdata->id;
+        _value = QVariant(pdata->value);
+        emit valueChanged(_value);
         return;
     }
 
-    case NODE_TYPE_UINT32_OPARAM :
+    case NODE_TYPE_INT32_OPARAM :
     {
-        ParamData<uint32_t> * pdata = reinterpret_cast<ParamData<uint32_t>*>(data);
+        ParamData<int32_t> * pdata = reinterpret_cast<ParamData<int32_t>*>(data);
         if(pdata->id == _lastId)
             return;
-        emit valueChanged(pdata->value);
+        _lastId = pdata->id;
+        _value = QVariant(pdata->value);
+        emit valueChanged(_value);
         return;
     }
 
@@ -64,7 +63,9 @@ void QOParamController::streamDataReceived(Data * data)
         ParamData<float> * pdata = reinterpret_cast<ParamData<float>*>(data);
         if(pdata->id == _lastId)
             return;
-        emit valueChanged(pdata->value);
+        _lastId = pdata->id;
+        _value = QVariant(pdata->value);
+        emit valueChanged(_value);
         return;
     }
 
@@ -73,7 +74,9 @@ void QOParamController::streamDataReceived(Data * data)
         ParamData<double> * pdata = reinterpret_cast<ParamData<double>*>(data);
         if(pdata->id == _lastId)
             return;
-        emit valueChanged(pdata->value);
+        _lastId = pdata->id;
+        _value = QVariant(pdata->value);
+        emit valueChanged(_value);
         return;
     }
     }

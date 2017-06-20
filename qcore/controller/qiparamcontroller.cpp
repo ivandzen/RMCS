@@ -20,55 +20,52 @@ QNodeController *QIParamController::createInstance(NodeID_t node_id,
     return new QIParamController(_type, node_id, parent_id, name, device);
 }
 
-NodeControllerForm *QIParamController::createForm(QWidget * parent)
-{
-
-}
-
 void QIParamController::setValue(const QVariant & value)
 {
     if(!value.isValid() || (value == _value))
         return;
     _value = value;
+    ++_dataId;
     _ready = true;
 }
 
-void QIParamController::fill(ArrayRef<Data> & arr) const
+void QIParamController::fill(ArrayRef<Data> & arr)
 {
     if(!_ready)
         return;
+    _ready = false;
 
     switch(_type)
     {
-    case NODE_TYPE_UINT8_IPARAM :
+    case NODE_TYPE_INT8_IPARAM :
     {
-        if(!_value.canConvert<uint8_t>())
+        if(!_value.canConvert<int8_t>())
             return;
-        ParamData<uint8_t> data;
+        ParamData<int8_t> data;
         data.id = _dataId;
-        data.value = _value.value<uint8_t>();
+        data.value = _value.value<int8_t>();
         arr.copyFrom(reinterpret_cast<Data*>(&data));
         return;
     }
 
-    case NODE_TYPE_UINT16_IPARAM :
+    case NODE_TYPE_INT16_IPARAM :
     {
-        if(!_value.canConvert<uint16_t>())
+        if(!_value.canConvert<int16_t>())
             return;
-        ParamData<uint16_t> data;
+        ParamData<int16_t> data;
         data.id = _dataId;
-        data.value = _value.value<uint16_t>();
+        data.value = _value.value<int16_t>();
         arr.copyFrom(reinterpret_cast<Data*>(&data));
         return;
     }
 
-    case NODE_TYPE_UINT32_IPARAM :
+    case NODE_TYPE_INT32_IPARAM :
     {
-        if(!_value.canConvert<uint32_t>())
+        if(!_value.canConvert<int32_t>())
             return;
-        ParamData<uint32_t> data;
+        ParamData<int32_t> data;
         data.id = _dataId;
-        data.value = _value.value<uint32_t>();
+        data.value = _value.value<int32_t>();
         arr.copyFrom(reinterpret_cast<Data*>(&data));
         return;
     }

@@ -1,6 +1,7 @@
 #include "qistreamcontroller.h"
 #include <string.h>
-#include <qcore/controller/forms/istreamform.h>
+#include <qcore/controller/qrwpropertycontroller.h>
+#include <QDebug>
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -9,29 +10,31 @@ QIStreamController::QIStreamController(NodeID_t node_id,
                                        const QString & name,
                                        QDeviceConnection * connection) :
     QNodeController (node_id, parent_id, name, connection),
-    _enabled(false)
+    _enabled(nullptr)
 {}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool QIStreamController::isStreamEnabled() const
+{
+    if(_enabled == nullptr)
+        return false;
+    return _enabled->get().toBool();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
 bool QIStreamController::setStreamEnabled(bool enabled)
 {
-    if(_enabled == enabled)
-        return true;
-    DataPacket<bool> packet(beginCtlTransfer());
-    if(!packet.init(enabled))
-    {
-        logMessage("setStreamEnabled : unable to initialize ctl transfer");
-        abortCtlTransfer();
+    if(_enabled == nullptr)
         return false;
-    }
-    return submitCtlTransfer(packet, [this](){ readData(); });
+    return _enabled->set(enabled);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 bool QIStreamController::addChannel(QIStreamChannelController *channel) {
-    if(channel->dataOffset() + channel->dataLength() >= packetSize())
+    if(channel->dataOffset() + channel->dataLength() > packetSize())
         return false;
     _channels.push_back(channel);
     return true;
@@ -39,25 +42,27 @@ bool QIStreamController::addChannel(QIStreamChannelController *channel) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-NodeControllerForm *QIStreamController::createForm(QWidget *parent)
+bool QIStreamController::eventInit(DeviceController * controller)
 {
-    return new IStreamForm(this, parent);
+    _enabled = findChild<QRWPropertyController*>("Enabled",
+                                                 Qt::FindDirectChildrenOnly);
+    if(_enabled == nullptr)
+        return false;
+
+    connect(_enabled, &QRWPropertyController::valueChanged,
+            [this](const QVariant & value)
+            {
+                eventStreamToggled(value.toBool());
+            });
+
+    return QNodeController::eventInit(controller);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 bool QIStreamController::eventData(const ControlPacket & packet)
 {
-    DataPacket<bool> data(packet);
-    if(!data.isValid())
-        return false;
-    bool enable_stream = *data.get();
-    if(enable_stream != _enabled)
-    {
-        _enabled = enable_stream;
-        eventStreamToggled(_enabled);
-        emit streamToggled(_enabled);
-    }
+    (void)packet;
     return true;
 }
 

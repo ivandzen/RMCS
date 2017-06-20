@@ -64,15 +64,12 @@ bool QIStreamChannelController::eventData(const ControlPacket & packet)
 
 bool QIStreamChannelController::eventInit(DeviceController * controller)
 {
-    if(!QNodeController::eventInit(controller))
-        return false;
-
     QDeviceController * qdev = (QDeviceController*)controller;
 
     QIStreamController * stream =
             qobject_cast<QIStreamController*>(qdev->getNode(_streamId));
 
-    if(stream == nullptr)
+    if((stream == nullptr) || !stream->addChannel(this))
         return false;
-    return stream->addChannel(this);
+    return QNodeController::eventInit(controller);
 }

@@ -1,4 +1,4 @@
-#include <usb/device/rmcsusbdevice.h>
+#include <plugins/usb/device/rmcsusbdevice.h>
 #include <core/common/control_protocol.h>
 
 #define USB_SIZ_BOS_DESC                0x0C

@@ -31,7 +31,7 @@ void QUsbIStreamProcessor::run()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void __attribute__((__stdcall__)) istreamTransferCallback(libusb_transfer * transfer)
+void CALLBACK_ATTRIB istreamTransferCallback(libusb_transfer * transfer)
 {
     reinterpret_cast<QUsbIStreamController*>(transfer->user_data)
             ->transferCplt(transfer);
@@ -73,11 +73,9 @@ void QUsbIStreamController::eventDestroy()
 
 bool QUsbIStreamController::eventInit(DeviceController * controller)
 {
-    if(!QIStreamController::eventInit(controller))
-        return false;
     _processor = new QUsbIStreamProcessor(this);
     _processor->moveToThread(thread());
-    return true;
+    return QIStreamController::eventInit(controller);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -1,7 +1,10 @@
 #ifndef QOSTREAMCONTROLLER_H
 #define QOSTREAMCONTROLLER_H
+#include <QVector>
 #include <qcore/controller/qnodecontroller.h>
 #include <qcore/controller/qostreamchannelcontroller.h>
+
+class QRWPropertyController;
 
 class QOStreamController :
         public QNodeController
@@ -13,7 +16,7 @@ public:
                        const QString & name,
                        QDeviceConnection *conn);
 
-    inline bool isStreamEnabled() const { return _enabled; }
+    bool isStreamEnabled() const;
 
     bool setStreamEnabled(bool enabled);
 
@@ -29,19 +32,16 @@ public:
 
     void processChannels(const ArrayRef<Data> & buffer);
 
-    virtual NodeControllerForm * createForm(QWidget * parent = nullptr) override;
-
 protected:
+    virtual bool eventInit(DeviceController * device) override;
+
     virtual bool eventData(const ControlPacket & packet) override;
 
     virtual void eventStreamToggled(bool enabled) = 0;
 
 private:
-    bool _enabled;
+    QRWPropertyController *             _enabled;
     QVector<QOStreamChannelController *> _channels;
-
-signals:
-    void streamToggled(bool enabled);
 };
 
 #endif // QOSTREAMCONTROLLER_H

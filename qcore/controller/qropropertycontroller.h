@@ -19,23 +19,25 @@ public:
                                              const QString & name,
                                              QDeviceConnection * device) override;
 
-    virtual NodeControllerForm * createForm(QWidget * parent) override;
-
     virtual NodeType_t type() const override;
-
-    inline bool update() { return readData(); }
 
     inline QVariant get() const { return _value; }
 
 signals:
-    void updated();
+    void valueChanged(QVariant value);
 
 protected:
     virtual bool eventSetup(const ControlPacket &) override;
 
     virtual bool eventData(const ControlPacket & packet) override;
 
-    inline void setValue(const QVariant & value) { _value = value; }
+    inline void setValue(const QVariant & value)
+    {
+        if(_value == value)
+            return;
+        _value = value;
+        emit valueChanged(_value);
+    }
 
 private:
     NodeType_t  _type;

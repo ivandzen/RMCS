@@ -6,6 +6,7 @@
 class QIParamController :
         public QIStreamChannelController
 {
+    Q_OBJECT
 public:
     QIParamController(NodeType_t type,
                       NodeID_t node_id = NodeIDNull,
@@ -18,15 +19,13 @@ public:
                                              const QString & name,
                                              QDeviceConnection * device) override;
 
-    virtual NodeControllerForm * createForm(QWidget * parent) override;
-
     virtual NodeType_t type() const override { return _type; }
 
 public slots:
     void setValue(const QVariant & value);
 
 protected:
-    virtual void fill(ArrayRef<Data> & arr) const override;
+    virtual void fill(ArrayRef<Data> & arr) override;
 
 private:
     NodeType_t  _type;

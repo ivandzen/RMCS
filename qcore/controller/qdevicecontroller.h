@@ -15,7 +15,6 @@ class QDeviceController :
     Q_OBJECT
 public:
     explicit QDeviceController(QDeviceConnection * connection,
-                               QNodeControllerFactory * factory,
                                QObject * parent = nullptr);
 
     virtual ~QDeviceController();
@@ -42,6 +41,11 @@ public:
         return static_cast<QDeviceConnection*>(DeviceController::connection());
     }
 
+    void update();
+
+signals:
+    void initialized();
+
 protected:
     virtual NodeController * createNode(NodeType_t node_type,
                                         NodeID_t node_id,
@@ -50,9 +54,12 @@ protected:
 
     virtual void logMessage(const char * message) override;
 
-private :
-    QNodeControllerFactory * _factory;
+    virtual void beforeInitNodes() override;
 
+    virtual void afterInitNodes() override;
+
+private :
+    QWidget *   _form;
 };
 
 #endif // QDEVICECONTROLLER_H

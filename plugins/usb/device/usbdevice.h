@@ -2,8 +2,8 @@
 #define USBDEVICE_H
 
 #include <rmcs_device_conf.h>
-#include <usb/device/usbdescriptors.h>
-#include <usb/device/usbdeviceep.h>
+#include <plugins/usb/device/usbdescriptors.h>
+#include <plugins/usb/device/usbdeviceep.h>
 
 #define USB_DEVICE_CAPABITY_TYPE                           0x10
 

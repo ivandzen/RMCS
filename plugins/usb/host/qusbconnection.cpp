@@ -12,29 +12,20 @@ QUsbConnection::QUsbConnection(libusb_device_handle * handle,
     QDeviceConnection (parent),
     _semaphore(1),
     _handle(handle),
-    _timeout(1000),
     _rx_pack(_rx_buf + sizeof(libusb_control_setup), MAX_SETUP_DATA_LENGTH),
-    _tx_pack(_tx_buf + sizeof(libusb_control_setup), MAX_SETUP_DATA_LENGTH)
+    _tx_pack(_tx_buf + sizeof(libusb_control_setup), MAX_SETUP_DATA_LENGTH),
+    _timeout(1000)
 {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void __attribute__((__stdcall__)) controlTransferCallback(struct libusb_transfer * transfer)
+void CALLBACK_ATTRIB controlTransferCallback(struct libusb_transfer * transfer)
 {
     QUsbConnection * connection =
             reinterpret_cast<QUsbConnection*>(transfer->user_data);
 
     connection->transferCallback(transfer);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-bool QUsbConnection::setController(QDeviceController * controller)
-{
-    if(!DeviceConnection::setController(controller))
-        return false;
-    return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -50,9 +41,7 @@ ControlPacket QUsbConnection::beginCtlTransfer(Length_t max_length)
                    .arg(MAX_SETUP_DATA_LENGTH)
                    .arg(max_length));
     }
-    return _tx_pack;//ControlPacket(_tx_buf,
-                    //     MIN(MAX_SETUP_DATA_LENGTH - sizeof(libusb_control_setup),
-                    //     max_length));
+    return _tx_pack;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -1,7 +1,7 @@
 #ifndef USBISTREAMNODE_H
 #define USBISTREAMNODE_H
 #include <core/device/istreamnode.h>
-#include <usb/device/usbdeviceep.h>
+#include <plugins/usb/device/usbdeviceep.h>
 
 class RMCSUsbDevice;
 

@@ -225,13 +225,13 @@ void DeviceController::parseNodeSettings(const ControlPacket & packet)
     ++_currentNode;
     if(_currentNode == _nodes.size())
     {
+        beforeInitNodes();
         for(_currentNode = 0;
             _currentNode != _nodes.size();
             ++_currentNode)
             _nodes[_currentNode]->init(this);
-
+        afterInitNodes();
         _state = STATE_WORK;
-        initializedEvent();
         return;
     }
     if(requestNodeControlPacket(_currentNode,

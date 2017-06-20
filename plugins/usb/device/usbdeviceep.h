@@ -1,7 +1,7 @@
 #ifndef USBDEVICEEP_H
 #define USBDEVICEEP_H
 #include <stdint.h>
-#include <usb/device/usbdescriptors.h>
+#include <plugins/usb/device/usbdescriptors.h>
 #include <usb_otg.h>
 
 class UsbDevice;

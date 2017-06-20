@@ -3,7 +3,6 @@
 
 #include <QObject>
 #include <core/controller/nodecontroller.h>
-#include <qcore/controller/forms/nodecontrollerform.h>
 #include <qcore/controller/qdeviceconnection.h>
 
 class QNodeController :
@@ -24,9 +23,9 @@ public:
                                              const QString & name,
                                              QDeviceConnection * device) = 0;
 
-    virtual NodeControllerForm * createForm(QWidget * parent) = 0;
-
     virtual NodeType_t type() const = 0;
+
+    void update();
 
 protected:
     virtual void eventDestroy() override;

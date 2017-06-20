@@ -1,6 +1,6 @@
 #include "usbistreamnode.h"
 #include "rmcsusbdevice.h"
-#include <usb/common/common.h>
+#include <plugins/usb/common/common.h>
 
 UsbIStreamNode::UsbIStreamNode(const char * name,
                                uint8_t ep_num,

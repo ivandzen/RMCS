@@ -30,7 +30,9 @@ HEADERS += \
     device/oparam.h \
     controller/deviceconnection.h \
     common/tcp.h \
-    common/defaultnodes.h
+    common/defaultnodes.h \
+    device/properties.h \
+    device/defaultnode.h
 
 SOURCES += \
     common/inputstream.cpp \
@@ -43,6 +45,7 @@ SOURCES += \
     device/ostreamnode.cpp \
     device/istreamchannel.cpp \
     device/ostreamchannel.cpp \
-    controller/deviceconnection.cpp
+    controller/deviceconnection.cpp \
+    device/defaultnode.cpp
 
 INCLUDEPATH += "../"

@@ -31,7 +31,7 @@ public:
     {
         ++_lastData.id;
         _lastData.value = value;
-        write(reinterpret_cast<Data*>(&_lastData));
+        OStreamChannel::write(reinterpret_cast<Data*>(&_lastData));
     }
 
     inline OParam & operator << (T value)

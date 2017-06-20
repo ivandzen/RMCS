@@ -4,6 +4,7 @@
 #include <core/controller/deviceconnection.h>
 
 class QNodeController;
+class QDeviceController;
 
 class QDeviceConnection :
         public QObject,
@@ -11,6 +12,10 @@ class QDeviceConnection :
 {
     Q_OBJECT
 public:
+    bool setController(QDeviceController * controller);
+
+    QDeviceController * controller() const;
+
     explicit QDeviceConnection(QObject * parent = nullptr);
 
     virtual QNodeController * createNode(NodeType_t node_type,

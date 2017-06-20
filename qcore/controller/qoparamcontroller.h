@@ -19,9 +19,9 @@ public :
                                              const QString & name,
                                              QDeviceConnection * device) override;
 
-    virtual NodeControllerForm * createForm(QWidget * parent) override;
-
     virtual NodeType_t type() const override { return _type; }
+
+    inline QVariant getValue() const { return _value; }
 
 signals :
     void valueChanged(QVariant value);

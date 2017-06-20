@@ -15,7 +15,7 @@ class QUsbConnection :
 {
     Q_OBJECT
 
-    friend void __attribute__((__stdcall__)) controlTransferCallback(struct libusb_transfer * transfer);
+    friend void CALLBACK_ATTRIB controlTransferCallback(struct libusb_transfer * transfer);
 public:
     QUsbConnection(libusb_device_handle * handle,
                    QObject * parent = nullptr);
@@ -23,8 +23,6 @@ public:
     void setTimeout(uint32_t tout) {
         _timeout = tout;
     }
-
-    bool setController(QDeviceController * controller);
 
     virtual ControlPacket beginCtlTransfer(Length_t max_length) override;
 

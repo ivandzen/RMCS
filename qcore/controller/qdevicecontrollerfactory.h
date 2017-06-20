@@ -4,8 +4,6 @@
 #include <QObject>
 #include <QtPlugin>
 
-
-class QNodeControllerFactory;
 class QDeviceController;
 class QWidget;
 
@@ -26,8 +24,7 @@ public:
 
     virtual QStringList devicesNames() const = 0;
 
-    virtual QDeviceController * open(QNodeControllerFactory * factory,
-                                     const QString & device_name) = 0;
+    virtual QDeviceController * getDevice(const QString & device_name) = 0;
 
     virtual QWidget * controlWidget() const = 0;
 };

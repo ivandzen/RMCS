@@ -119,6 +119,7 @@ QUsbConnection * QUsbDeviceFactory::open(QUsbDevice device)
     result = libusb_open(device.instance(), &new_handle);
     if(result != 0)
     {
+        qDebug() << libusb_error_name(result);
         return nullptr;
     }
 
@@ -126,6 +127,7 @@ QUsbConnection * QUsbDeviceFactory::open(QUsbDevice device)
                                       ISOUSB_BASE_CONFIG);
     if(result != 0)
     {
+        qDebug() << libusb_error_name(result);
         libusb_close(new_handle);
         return nullptr;
     }
@@ -134,6 +136,7 @@ QUsbConnection * QUsbDeviceFactory::open(QUsbDevice device)
                                     ISOUSB_BASE_INTERFACE);
     if(result != 0)
     {
+        qDebug() << libusb_error_name(result);
         libusb_close(new_handle);
         return nullptr;
     }
@@ -142,6 +145,7 @@ QUsbConnection * QUsbDeviceFactory::open(QUsbDevice device)
                                               ISOUSB_BASE_INTERFACE, 0);
     if(result != 0)
     {
+        qDebug() << libusb_error_name(result);
         libusb_close(new_handle);
         return nullptr;
     }
@@ -188,8 +192,7 @@ QString QUsbDeviceFactory::factoryName() const
     return "USB";
 }
 
-QDeviceController *QUsbDeviceFactory::open(QNodeControllerFactory * factory,
-                                           const QString & device_name)
+QDeviceController *QUsbDeviceFactory::getDevice(const QString & device_name)
 {
     QList<QUsbDevice> devs = devices();
     for(auto & dev : devs)
@@ -198,7 +201,11 @@ QDeviceController *QUsbDeviceFactory::open(QNodeControllerFactory * factory,
             QUsbConnection * new_connection = open(dev);
             if(new_connection == nullptr)
                 return nullptr;
-            QDeviceController * new_controller = new QDeviceController(new_connection, factory, this);
+
+            if(new_connection->controller() != nullptr)
+                return new_connection->controller();
+
+            QDeviceController * new_controller = new QDeviceController(new_connection, this);
             return new_controller;
         }
     return nullptr;

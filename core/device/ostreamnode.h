@@ -2,6 +2,7 @@
 #define OSTREAMNODE_H
 #include <core/common/outputstream.h>
 #include <core/device/node.h>
+#include <core/device/properties.h>
 
 class OStreamChannel;
 
@@ -31,6 +32,12 @@ protected:
     virtual void streamToggled(bool enabled) = 0;
 
 private:
+    BOOL_PROP(Enabled, false,
+              [this]() { return _enabled; },
+              [this](bool enabled) { return toggleStream(enabled); })
+
+    bool toggleStream(bool enabled);
+
     bool 	_enabled;
     Length_t _packetSize;
     std::vector<Data> _buffer;

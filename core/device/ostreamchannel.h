@@ -26,7 +26,7 @@ public:
 
     inline Length_t dataLength() const { return _length; }
 
-    inline void write(const Data * data)
+    inline void write(Data * data)
     {
         memcpy(_ostream->ostreamPacket() + _offset, data, _length);
     }
