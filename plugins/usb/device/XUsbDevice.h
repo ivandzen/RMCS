@@ -14,25 +14,32 @@
 
 class UsbZeroEndpoint;
 
-class UsbEndpoint :
+class __packed UsbEndpoint :
 		public UsbEPDescriptor
 {
 public:
 	UsbEndpoint(void * handle,
 				const UsbEPDescriptor & other) :
 		UsbEPDescriptor(other),
-		_handle(handle)
+		_handle(handle),
+		_status(0)
 	{}
 
 	virtual ~UsbEndpoint() {}
 
 	virtual bool setupRequest(UsbSetupRequest * req) = 0;
 
-	inline void open() { HAL_XUsbDevice_OpenEP(_handle, bEndpointAddress(), wMaxPacketSize(), bmAttributes() & UsbEPTypeMask); }
+	inline void open()
+	{
+		HAL_XUsbDevice_OpenEP(_handle, bEndpointAddress(), wMaxPacketSize(), bmAttributes() & UsbEPTypeMask);
+		openEvent();
+	}
 
-	inline void close() { HAL_XUsbDevice_CloseEP(_handle, bEndpointAddress()); }
-
-	inline void flush() { HAL_XUsbDevice_FlushEP(_handle, bEndpointAddress()); }
+	inline void close()
+	{
+		HAL_XUsbDevice_CloseEP(_handle, bEndpointAddress());
+		closeEvent();
+	}
 
 	inline void stall()
 	{
@@ -50,14 +57,16 @@ public:
 
 	void reportStatus(UsbZeroEndpoint * ep);
 
-	uint16_t getRxCount() const { return HAL_XUsbDevice_GetRxCount(_handle, bEndpointAddress()); }
-
 	inline void * handle() const { return _handle; }
 
 protected:
 	virtual void stallEvent() {}
 
 	virtual void clearStallEvent() {}
+
+	virtual void openEvent() {}
+
+	virtual void closeEvent() {}
 
 private:
 	void * 		_handle;
@@ -66,7 +75,7 @@ private:
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-class UsbInEndpoint :
+class __packed UsbInEndpoint :
 		public UsbEndpoint
 {
 public:
@@ -85,7 +94,7 @@ public:
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-class UsbOutEndpoint :
+class __packed UsbOutEndpoint :
 		public UsbEndpoint
 {
 public:
@@ -104,7 +113,7 @@ public:
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-class UsbZeroEndpoint :
+class __packed UsbZeroEndpoint :
 		public UsbInEndpoint,
 		public UsbOutEndpoint
 {
@@ -211,7 +220,7 @@ private:
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-class UsbConfiguration :
+class __packed UsbConfiguration :
 		public UsbConfigDescriptor
 {
 public:
@@ -227,19 +236,10 @@ public:
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-class XUsbDevice :
+class __packed XUsbDevice :
 	public UsbZeroEndpoint
 {
 public:
-
-    typedef enum
-	{
-        OK,
-        BUSY,
-        FAIL
-    }
-    Status;
-
     typedef enum
 	{
         USBD_SPEED_HIGH  = 0,
@@ -251,23 +251,30 @@ public:
 	XUsbDevice();
 	virtual ~XUsbDevice();
 
-    bool  	dataOutStage(uint8_t epnum, uint8_t * pdata);
-    bool	dataInStage(uint8_t epnum, uint8_t * pdata);
-    Status  SOF();
-    Status  reset(Speed speed);
-    Status  suspend();
-    Status  resume();
-    Status  isoOutIncomplete(uint8_t epnum);
-    Status  isoInIncomplete(uint8_t epnum);
-    virtual void  connectEvent();
-    virtual void  disconnectEvent();
+    bool dataOutStage(uint8_t epnum, uint8_t * pdata);
+
+    bool dataInStage(uint8_t epnum, uint8_t * pdata);
+
+    void SOF();
+
+    void reset(Speed speed);
+
+    void suspend();
+
+    void resume();
+
+    void isoOutIncomplete(uint8_t epnum);
+
+    void isoInIncomplete(uint8_t epnum);
+
+    virtual void connectEvent();
+
+    virtual void disconnectEvent();
 
 protected:
-	bool setString(uint8_t idx,
-				   const UsbStringDescriptor & string);
+	bool setString(uint8_t idx, const UsbStringDescriptor & string);
 
-	bool setConfig(uint8_t idx,
-				   UsbConfiguration * config);
+	bool setConfig(uint8_t idx, UsbConfiguration * config);
 
 	virtual void runTestMode() {}
 
@@ -285,15 +292,23 @@ protected:
 
 private:
     virtual void stdDevReq(UsbSetupRequest * req) final override;
+
     virtual void stdItfReq(UsbSetupRequest * req) final override;
+
     virtual void stdEPReq(UsbSetupRequest * req) final override;
 
     void 	setAddress(UsbSetupRequest * req);
+
     void	setConfig(UsbSetupRequest * req);
+
     void 	getConfig(UsbSetupRequest * req);
+
     void	getStatus(UsbSetupRequest * req);
+
     void	setFeature(UsbSetupRequest * req);
+
     void	clrFeature(UsbSetupRequest * req);
+
     void 	getDescriptor(UsbSetupRequest * req);
 
     enum DeviceState
@@ -310,8 +325,8 @@ private:
         CONFIG_SELF_POWERED     = 1
     };
 
-    int					_hsConfIdx;
-    int					_defConfIdx;
+    uint8_t				_hsConfIdx;
+    uint8_t				_defConfIdx;
     void *				_handle;
     bool				_dev_test_mode;
     Speed               _dev_speed;
@@ -321,10 +336,8 @@ private:
     uint32_t            _dev_config_status;
     uint32_t            _dev_remote_wakeup;
     uint8_t				_dev_config;
-
     UsbDeviceDescriptor	_devDescriptor;
     UsbStringDescriptor	_strings[USB_MAX_STRINGS];
-
     UsbConfiguration *	_configs[USB_MAX_CONFIGS];
     UsbInEndpoint *		_inEndpoints[USB_MAX_ENDPOINTS];
     UsbOutEndpoint *	_outEndpoints[USB_MAX_ENDPOINTS];

@@ -126,15 +126,15 @@ bool UsbZeroEndpoint::setupStage(uint8_t * pdata)
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-XUsbDevice::XUsbDevice() {
-	// TODO Auto-generated constructor stub
+XUsbDevice::XUsbDevice()
+{
 
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-XUsbDevice::~XUsbDevice() {
-	// TODO Auto-generated destructor stub
+XUsbDevice::~XUsbDevice()
+{
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -183,53 +183,48 @@ bool  XUsbDevice::dataInStage(uint8_t epnum, uint8_t * pdata)
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-XUsbDevice::Status  XUsbDevice::SOF()
+void  XUsbDevice::SOF()
 {
 	if(_dev_state == DEV_CONFIGURED)
 		SOFEvent();
-	return OK;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-XUsbDevice::Status  XUsbDevice::suspend()
+void  XUsbDevice::suspend()
 {
 	_dev_old_state =  _dev_state;
 	_dev_state  = DEV_SUSPENDED;
 	suspendEvent();
-	return OK;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-XUsbDevice::Status  XUsbDevice::resume()
+void  XUsbDevice::resume()
 {
 	_dev_state = _dev_old_state;
 	resumeEvent();
-	return OK;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-XUsbDevice::Status  XUsbDevice::isoOutIncomplete(uint8_t epnum)
+void  XUsbDevice::isoOutIncomplete(uint8_t epnum)
 {
 	if(_dev_state == DEV_CONFIGURED)
 		isoOutIncompleteEvent(epnum);
-	return OK;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-XUsbDevice::Status  XUsbDevice::isoInIncomplete(uint8_t epnum)
+void XUsbDevice::isoInIncomplete(uint8_t epnum)
 {
 	if(_dev_state == DEV_CONFIGURED)
 		isoInIncompleteEvent(epnum);
-	return OK;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-XUsbDevice::Status  XUsbDevice::reset(Speed speed)
+void XUsbDevice::reset(Speed speed)
 {
 	//! @attention !!!
 	_dev_speed = speed;
@@ -244,8 +239,6 @@ XUsbDevice::Status  XUsbDevice::reset(Speed speed)
 
     _configs[_dev_config]->deInit();
     resetEvent();
-
-    return OK;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -324,7 +317,7 @@ void  XUsbDevice::stdItfReq(UsbSetupRequest * req)
         	}
         	}
 
-            if((req->wLength == 0) && (ret == OK))
+            if((req->wLength == 0) && ret)
                 ctlSendStatus();
         }
         else
@@ -342,7 +335,6 @@ void  XUsbDevice::stdItfReq(UsbSetupRequest * req)
 
 void  XUsbDevice::stdEPReq(UsbSetupRequest * req)
 {
-    bool ret = OK;
     uint8_t ep_addr  = LOBYTE(req->wIndex);
 
     UsbEndpoint * ep;
@@ -353,7 +345,7 @@ void  XUsbDevice::stdEPReq(UsbSetupRequest * req)
 
     if ((req->bmRequest & 0x60) == 0x20)
     {
-    	ret = ep->setupRequest(req);
+    	ep->setupRequest(req);
     	return;
     }
 
