@@ -4,7 +4,7 @@
 
 QBoolRWPropertyForm::QBoolRWPropertyForm(QRWPropertyController * prop,
                                          QWidget * parent) :
-    NodeControllerForm (prop, parent),
+    QNodeForm (prop, parent),
     ui(new Ui::QBoolRWPropertyForm)
 {
     ui->setupUi(this);
@@ -20,7 +20,7 @@ QBoolRWPropertyForm::~QBoolRWPropertyForm()
 
 QRWPropertyController *QBoolRWPropertyForm::node() const
 {
-    return static_cast<QRWPropertyController*>(NodeControllerForm::node());
+    return static_cast<QRWPropertyController*>(QNodeForm::node());
 }
 
 void QBoolRWPropertyForm::valueChanged(const QVariant & value)

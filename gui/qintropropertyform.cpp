@@ -4,7 +4,7 @@
 
 QIntROPropertyForm::QIntROPropertyForm(QROPropertyController * prop,
                                        QWidget * parent) :
-    NodeControllerForm (prop, parent),
+    QNodeForm (prop, parent),
     ui(new Ui::QIntROPropertyForm)
 {
     ui->setupUi(this);
@@ -20,7 +20,7 @@ QIntROPropertyForm::~QIntROPropertyForm()
 
 QROPropertyController *QIntROPropertyForm::node() const
 {
-    return static_cast<QROPropertyController*>(NodeControllerForm::node());
+    return static_cast<QROPropertyController*>(QNodeForm::node());
 }
 
 void QIntROPropertyForm::valueChanged(const QVariant & value)

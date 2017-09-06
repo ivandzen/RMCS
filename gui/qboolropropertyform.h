@@ -2,7 +2,7 @@
 #define QBOOLROPROPERTYFORM_H
 
 #include <QWidget>
-#include <gui/nodecontrollerform.h>
+#include <gui/qnodeform.h>
 
 namespace Ui {
 class QBoolROPropertyForm;
@@ -10,7 +10,7 @@ class QBoolROPropertyForm;
 
 class QROPropertyController;
 
-class QBoolROPropertyForm : public NodeControllerForm
+class QBoolROPropertyForm : public QNodeForm
 {
     Q_OBJECT
 

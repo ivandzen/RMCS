@@ -2,6 +2,8 @@
 #define ENDPOINTS_H
 #include <core/device/iparam.h>
 #include <core/device/oparam.h>
+#include <core/device/rawichannel.h>
+#include <core/device/rawochannel.h>
 
 
 class Int8IParam :
@@ -105,8 +107,8 @@ class Float32OParam :
 public:
 	Float32OParam(const char * name,
 				  OStreamNode * ostream,
-				  Node * parent) :
-					  OParam<float>(NODE_TYPE_FLOAT32_OPARAM, name, ostream, parent)
+                  Node * parent) :
+        OParam<float>(NODE_TYPE_FLOAT32_OPARAM, name, ostream, parent)
 	{}
 };
 
@@ -116,9 +118,59 @@ class Float64OParam :
 public:
 	Float64OParam(const char * name,
 				  OStreamNode * ostream,
-				  Node * parent) :
-					  OParam<double>(NODE_TYPE_FLOAT64_OPARAM, name, ostream, parent)
+                  Node * parent) :
+        OParam<double>(NODE_TYPE_FLOAT64_OPARAM,
+                       name,
+                       ostream,
+                       parent)
 	{}
+};
+
+///////////////////////////////////////////////////////////////////////////////////
+
+template <size_t buffer_size>
+class RawInt8OChannel :
+        public RawOChannel<int8_t, buffer_size>
+{
+public:
+    RawInt8OChannel(const char * name,
+                    OStreamNode * ostream,
+                    Node * parent) :
+        RawOChannel<uint8_t, buffer_size>(NODE_TYPE_RAW_INT8_OCHANNEL,
+                                          name,
+                                          ostream,
+                                          parent)
+    {}
+};
+
+template <size_t buffer_size>
+class RawInt16OChannel :
+        public RawOChannel<int16_t, buffer_size>
+{
+public:
+    RawInt16OChannel(const char * name,
+                     OStreamNode * ostream,
+                     Node * parent) :
+        RawOChannel<uint16_t, buffer_size>(NODE_TYPE_RAW_INT16_OCHANNEL,
+                                           name,
+                                           ostream,
+                                           parent)
+    {}
+};
+
+template <size_t buffer_size>
+class RawInt32OChannel :
+        public RawOChannel<int32_t, buffer_size>
+{
+public:
+    RawInt32OChannel(const char * name,
+                     OStreamNode * ostream,
+                     Node * parent) :
+        RawOChannel<uint32_t, buffer_size>(NODE_TYPE_RAW_INT32_OCHANNEL,
+                                           name,
+                                           ostream,
+                                           parent)
+    {}
 };
 
 #endif // ENDPOINTS_H

@@ -35,7 +35,7 @@ void QDeviceWindow::clearForms()
 {
     ui->tableWidget->clear();
     //ui->listWidget->clear();
-    for(NodeControllerForm * frm : _forms)
+    for(QNodeForm * frm : _forms)
         frm->deleteLater();
     _forms.clear();
 }
@@ -59,7 +59,7 @@ void QDeviceWindow::createForms(QNodeController *node)
         {
             if(isPropertyType(child->type()) || isParamType(child->type()))
             {
-                NodeControllerForm * form = _factory.createForm(child, this);
+                QNodeForm * form = _factory.createForm(child, this);
                 if(form != 0)
                 {
                     _forms.append(form);

@@ -2,7 +2,7 @@
 #define QFLOATRWPROPERTYFORM_H
 
 #include <QWidget>
-#include <gui/nodecontrollerform.h>
+#include <gui/qnodeform.h>
 
 namespace Ui {
 class QFloatRWPropertyForm;
@@ -10,7 +10,7 @@ class QFloatRWPropertyForm;
 
 class QRWPropertyController;
 
-class QFloatRWPropertyForm : public NodeControllerForm
+class QFloatRWPropertyForm : public QNodeForm
 {
     Q_OBJECT
 

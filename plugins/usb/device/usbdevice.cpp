@@ -69,8 +69,7 @@ void HAL_PCD_ResetCallback(PCD_HandleTypeDef *hpcd) {
         break;
     }
 
-    device->setSpeed(speed);
-    device->reset();
+    device->reset(speed);
 }
 
 /**
@@ -335,7 +334,6 @@ UsbDevice::Status UsbDevice::dataOutStage(uint8_t epnum, uint8_t *pdata)
 
     if(epnum == 0) {
     	pep = &_ep_out[0];
-        //pep = &_ep_out[0];
 
         if ( _ep0_state == EP0_DATA_OUT) {
             if(pep->rem_length > pep->maxpacket) {
@@ -465,8 +463,9 @@ UsbDevice::Status UsbDevice::setSpeed(Speed speed)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-UsbDevice::Status UsbDevice::reset()
+UsbDevice::Status UsbDevice::reset(Speed speed)
 {
+	setSpeed(speed);
     /* Open EP0 OUT */
     openEP(0x00, EP_CTRL, USB_MAX_EP0_SIZE);
 
@@ -851,14 +850,15 @@ void UsbDevice::setConfig(UsbDevice::SetupRequest *req)
 
 void UsbDevice::getConfig(UsbDevice::SetupRequest *req)
 {
+	static const uint8_t DEFAULT_CONFIG = 0;
+
     if (req->wLength != 1) {
         ctlError(req);
     }
     else {
         switch (_dev_state ) {
         case DEV_ADDRESSED:
-            _dev_default_config = 0;
-            ctlSendData ((uint8_t *)&_dev_default_config, 1);
+            ctlSendData ((uint8_t *)&DEFAULT_CONFIG, 1);
             break;
 
         case DEV_CONFIGURED:

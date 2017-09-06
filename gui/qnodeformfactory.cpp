@@ -17,7 +17,7 @@
 #include <gui/qfloatropropertyform.h>
 #include <gui/qfloatrwpropertyform.h>
 
-NodeControllerForm * QNodeFormFactory::createForm(QNodeController * controller,
+QNodeForm * QNodeFormFactory::createForm(QNodeController * controller,
                                                   QWidget * parent)
 {
     switch(controller->type())

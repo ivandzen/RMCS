@@ -3,7 +3,7 @@
 
 #include <QWidget>
 #include <QVariant>
-#include <gui/nodecontrollerform.h>
+#include <gui/qnodeform.h>
 
 namespace Ui {
 class QIParamForm;
@@ -12,7 +12,7 @@ class QIParamForm;
 class QIParamController;
 
 class QIParamForm :
-        public NodeControllerForm
+        public QNodeForm
 {
     Q_OBJECT
 

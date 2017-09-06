@@ -2,7 +2,7 @@
 #define QINTROPROPERTYFORM_H
 
 #include <QWidget>
-#include <gui/nodecontrollerform.h>
+#include <gui/qnodeform.h>
 
 namespace Ui {
 class QIntROPropertyForm;
@@ -10,7 +10,7 @@ class QIntROPropertyForm;
 
 class QROPropertyController;
 
-class QIntROPropertyForm : public NodeControllerForm
+class QIntROPropertyForm : public QNodeForm
 {
     Q_OBJECT
 

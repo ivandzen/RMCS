@@ -10,7 +10,7 @@ QT += core gui widgets
 
 CONFIG += c++11 plugin
 
-DESTDIR = $$BUILD_PREFIX/share/rmcs/plug-ins
+DESTDIR = $$BUILD_PREFIX/share/rmcs/backends
 
 HEADERS += \
     host/qusbconnection.h \

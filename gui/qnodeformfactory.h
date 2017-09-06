@@ -1,11 +1,11 @@
 #ifndef QNODEFORMFACTORY_H
 #define QNODEFORMFACTORY_H
-#include <gui/nodecontrollerform.h>
+#include <gui/qnodeform.h>
 
 class QNodeFormFactory
 {
 public:
-    NodeControllerForm * createForm(QNodeController * controller,
+    QNodeForm * createForm(QNodeController * controller,
                                     QWidget *parent);
 };
 

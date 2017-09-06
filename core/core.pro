@@ -32,7 +32,9 @@ HEADERS += \
     common/tcp.h \
     common/defaultnodes.h \
     device/properties.h \
-    device/defaultnode.h
+    device/defaultnode.h \
+    device/rawichannel.h \
+    device/rawochannel.h
 
 SOURCES += \
     common/inputstream.cpp \

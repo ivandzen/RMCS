@@ -4,7 +4,7 @@
 
 QOParamForm::QOParamForm(QOParamController * node,
                          QWidget *parent) :
-    NodeControllerForm(node, parent),
+    QNodeForm(node, parent),
     ui(new Ui::QOParamForm)
 {
     ui->setupUi(this);
@@ -19,7 +19,7 @@ QOParamForm::~QOParamForm()
 
 QOParamController *QOParamForm::node() const
 {
-    return static_cast<QOParamController*>(NodeControllerForm::node());
+    return static_cast<QOParamController*>(QNodeForm::node());
 }
 
 void QOParamForm::valueChanged(const QVariant &value)

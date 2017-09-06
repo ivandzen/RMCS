@@ -38,6 +38,8 @@ protected:
 
     virtual bool nodeDataReceived(const ControlPacket & packet) override;
 
+    inline Data * streamPacket() const { return _ostream->ostreamPacket() + _offset; }
+
 private:
     OStreamNode *   _ostream;
     bool            _enabled;

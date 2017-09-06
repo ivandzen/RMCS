@@ -6,7 +6,7 @@
 
 QIParamForm::QIParamForm(QIParamController * param,
                          QWidget *parent) :
-    NodeControllerForm(param, parent),
+    QNodeForm(param, parent),
     ui(new Ui::QIParamForm)
 {
     ui->setupUi(this);
@@ -63,7 +63,7 @@ QIParamForm::~QIParamForm()
 
 QIParamController * QIParamForm::node() const
 {
-    return static_cast<QIParamController*>(NodeControllerForm::node());
+    return static_cast<QIParamController*>(QNodeForm::node());
 }
 
 void QIParamForm::on_spinBox_valueChanged(int arg1)

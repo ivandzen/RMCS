@@ -20,7 +20,6 @@ FORMS += \
 
 HEADERS += \
     connfactoriesform.h \
-    nodecontrollerform.h \
     qboolropropertyform.h \
     qboolrwpropertyform.h \
     qdevicemodel.h \
@@ -31,11 +30,11 @@ HEADERS += \
     qintrwpropertyform.h \
     qiparamform.h \
     qoparamform.h \
-    qnodeformfactory.h
+    qnodeformfactory.h \
+    qnodeform.h
 
 SOURCES += \
     connfactoriesform.cpp \
-    nodecontrollerform.cpp \
     qboolropropertyform.cpp \
     qboolrwpropertyform.cpp \
     qdevicemodel.cpp \
@@ -46,5 +45,6 @@ SOURCES += \
     qintrwpropertyform.cpp \
     qiparamform.cpp \
     qoparamform.cpp \
-    qnodeformfactory.cpp
+    qnodeformfactory.cpp \
+    qnodeform.cpp
 

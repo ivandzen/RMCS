@@ -268,14 +268,13 @@ private:
     Status  dataOutStage(uint8_t epnum, uint8_t * pdata);
     Status  dataInStage(uint8_t epnum, uint8_t * pdata);
     Status  SOF();
+    Status  reset(Speed speed);
     Status  suspend();
     Status  resume();
     Status  isoOutIncomplete(uint8_t epnum);
     Status  isoInIncomplete(uint8_t epnum);
     Status  connected();
     Status  disconnected();
-    Status  setSpeed(Speed speed);
-    Status  reset();
 
     void    parseSetupRequest(uint8_t * pdata);
     Status  stdDevReq(SetupRequest * req);
@@ -290,6 +289,7 @@ private:
     void    setFeature (SetupRequest * req);
     void    clrFeature (SetupRequest * req);
 
+    Status  setSpeed(Speed speed);
     Status  setUSBAddress(uint8_t dev_addr);
     Status  ctlSendStatus();
     Status  ctlContinueRx(uint8_t * pbuf, uint16_t len);

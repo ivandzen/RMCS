@@ -29,7 +29,7 @@ private:
 
     Ui::QDeviceWindow *ui;
     QDeviceModel _model;
-    QVector<NodeControllerForm*> _forms;
+    QVector<QNodeForm*> _forms;
     QNodeFormFactory _factory;
 };
 

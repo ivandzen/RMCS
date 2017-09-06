@@ -2,7 +2,7 @@
 #define QOPARAMFORM_H
 
 #include <QWidget>
-#include <gui/nodecontrollerform.h>
+#include <gui/qnodeform.h>
 
 namespace Ui {
 class QOParamForm;
@@ -11,7 +11,7 @@ class QOParamForm;
 class QOParamController;
 
 class QOParamForm :
-        public NodeControllerForm
+        public QNodeForm
 {
     Q_OBJECT
 

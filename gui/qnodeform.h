@@ -1,15 +1,15 @@
-#ifndef NODECONTROLLERFORM_H
-#define NODECONTROLLERFORM_H
+#ifndef QNODEFORM_H
+#define QNODEFORM_H
 
 #include <QWidget>
 
 class QNodeController;
 
-class NodeControllerForm : public QWidget
+class QNodeForm : public QWidget
 {
     Q_OBJECT
 public:
-    explicit NodeControllerForm(QNodeController * node,
+    explicit QNodeForm(QNodeController * node,
                                 QWidget *parent = 0);
 
     inline QNodeController * node() const { return _node; }
@@ -18,4 +18,4 @@ private:
     QNodeController * _node;
 };
 
-#endif // NODECONTROLLERFORM_H
+#endif // QNODEFORM_H

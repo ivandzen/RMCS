@@ -1,6 +1,6 @@
-#include "nodecontrollerform.h"
+#include "qnodeform.h"
 
-NodeControllerForm::NodeControllerForm(QNodeController * node,
+QNodeForm::QNodeForm(QNodeController * node,
                                        QWidget * parent) :
     QWidget(parent),
     _node(node)
