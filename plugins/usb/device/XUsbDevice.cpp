@@ -7,6 +7,8 @@
 
 #include <plugins/usb/device/XUsbDevice.h>
 
+#ifdef ENABLE_XUSBDEVICE
+
 #define LOBYTE(x)  ((uint8_t)(x & 0x00FF))
 #define HIBYTE(x)  ((uint8_t)((x & 0xFF00) >>8))
 #define MIN(a, b)  (((a) < (b)) ? (a) : (b))
@@ -122,6 +124,20 @@ bool UsbZeroEndpoint::setupStage(uint8_t * pdata)
         break;
     }
     }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+bool UsbConfiguration::addInEndpoint(UsbInEndpoint * ep)
+{
+	return _device->addInEndpoint(ep);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+bool UsbConfiguration::addOutEndpoint(UsbOutEndpoint * ep)
+{
+	return _device->addOutEndpoint(ep);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -664,3 +680,4 @@ void XUsbDevice::clrFeature(UsbSetupRequest * req)
     }
 }
 
+#endif //ENABLE_XUSBDEVICE

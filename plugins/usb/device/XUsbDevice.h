@@ -7,6 +7,9 @@
 
 #ifndef XUSBDEVICE_H_
 #define XUSBDEVICE_H_
+
+#ifdef ENABLE_XUSBDEVICE
+
 #include <plugins/usb/common/usbdescriptors.h>
 #include "XUsbDevice_Config.h"
 
@@ -24,6 +27,8 @@ public:
 		_handle(handle),
 		_status(0)
 	{}
+
+	virtual UsbEPDescriptor getDescriptor(const UsbEPDescriptor & descriptor) = 0;
 
 	virtual ~UsbEndpoint() {}
 
@@ -55,7 +60,7 @@ public:
 		clearStallEvent();
 	}
 
-	void reportStatus(UsbZeroEndpoint * ep);
+	void reportStatus(UsbZeroEndpoint * ep0);
 
 	inline void * handle() const { return _handle; }
 
@@ -109,6 +114,27 @@ public:
 	{
 		HAL_XUsbDevice_Receive(handle(), bEndpointAddress(), pbuf, size);
 	}
+};
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+class UsbAbstractDevice
+{
+public:
+	typedef void * Handle;
+
+	virtual ~UsbAbstractDevice() {}
+
+	virtual void stdDevReq(UsbSetupRequest * req) = 0;
+
+	virtual void stdItfReq(UsbSetupRequest * req) = 0;
+
+	virtual void stdEPReq(UsbSetupRequest * req) = 0;
+
+	inline Handle handle() const { return _handle; }
+
+private:
+	Handle _handle;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -220,11 +246,15 @@ private:
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
+class XUsbDevice;
+
 class __packed UsbConfiguration :
 		public UsbConfigDescriptor
 {
 public:
 	virtual ~UsbConfiguration() {}
+
+	virtual UsbConfigDescriptor getDescriptor(const UsbConfigDescriptor & descriptor) = 0;
 
 	virtual bool init(UsbInEndpoint * inEndpoints,
 					  UsbOutEndpoint * outEndpoints) = 0;
@@ -232,6 +262,14 @@ public:
 	virtual void deInit() = 0;
 
 	virtual bool setupRequest(UsbSetupRequest * req) = 0;
+
+protected:
+    bool	addInEndpoint(UsbInEndpoint * ep);
+
+    bool	addOutEndpoint(UsbOutEndpoint * ep);
+
+private:
+	XUsbDevice * _device;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -239,6 +277,8 @@ public:
 class __packed XUsbDevice :
 	public UsbZeroEndpoint
 {
+	friend class UsbConfiguration;
+
 public:
     typedef enum
 	{
@@ -311,6 +351,10 @@ private:
 
     void 	getDescriptor(UsbSetupRequest * req);
 
+    bool	addInEndpoint(UsbInEndpoint * ep);
+
+    bool	addOutEndpoint(UsbOutEndpoint * ep);
+
     enum DeviceState
 	{
         DEV_DEFAULT,
@@ -342,5 +386,7 @@ private:
     UsbInEndpoint *		_inEndpoints[USB_MAX_ENDPOINTS];
     UsbOutEndpoint *	_outEndpoints[USB_MAX_ENDPOINTS];
 };
+
+#endif //ENABLE_XUSBDEVICE
 
 #endif /* XUSBDEVICE_H_ */
