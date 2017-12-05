@@ -79,11 +79,14 @@ bool UsbZeroEndpoint::epDataIn(uint8_t * pdata)
 		}
 	}
 
+	//! @attention нужно этот код активировать на всякий случай
+	/*
 	if (_dev_test_mode == 1)
 	{
 		runTestMode();
 		_dev_test_mode = 0;
 	}
+	*/
 
 	return true;
 }
@@ -167,7 +170,7 @@ bool XUsbDevice::setString(uint8_t idx, const UsbStringDescriptor & string)
 
 bool  XUsbDevice::setConfig(uint8_t idx, UsbConfiguration * config)
 {
-	if((idx == 0) || (idx > USB_MAX_CONFIGS) || (_configs[idx] != nullptr))
+	if((idx == 0) || (idx > USB_MAX_CONFIGS))
 		return false;
 	_configs[idx] = config;
 	return true;

@@ -246,6 +246,19 @@ private:
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
+class UsbInterface
+{
+public:
+	virtual bool buildDescriptor(UsbInterfaceDescriptor & descriptor) = 0;
+
+	UsbInEndpoint * getInEndpoint(uint8_t idx) const;
+
+	UsbOutEndpoint * getOutEndpoint(uint8_t idx) const;
+
+};
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
 class XUsbDevice;
 
 class __packed UsbConfiguration :
@@ -254,7 +267,7 @@ class __packed UsbConfiguration :
 public:
 	virtual ~UsbConfiguration() {}
 
-	virtual UsbConfigDescriptor getDescriptor(const UsbConfigDescriptor & descriptor) = 0;
+	virtual bool buildDescriptor(UsbConfigDescriptor & descriptor) = 0;
 
 	virtual bool init(UsbInEndpoint * inEndpoints,
 					  UsbOutEndpoint * outEndpoints) = 0;
@@ -262,6 +275,11 @@ public:
 	virtual void deInit() = 0;
 
 	virtual bool setupRequest(UsbSetupRequest * req) = 0;
+
+	bool setInterface(UsbInterface * interface)
+	{
+
+	}
 
 protected:
     bool	addInEndpoint(UsbInEndpoint * ep);
@@ -289,6 +307,7 @@ public:
     Speed;
 
 	XUsbDevice();
+
 	virtual ~XUsbDevice();
 
     bool dataOutStage(uint8_t epnum, uint8_t * pdata);
