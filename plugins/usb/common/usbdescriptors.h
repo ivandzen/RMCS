@@ -156,11 +156,52 @@ class __packed UsbDeviceDescriptor :
         public UsbDescriptor
 {
 public:
-	UsbDeviceDescriptor() :
-		UsbDescriptor(nullptr, 0)
+    enum BCDUsb
+	{
+        USB_1_0 = 0x0100,
+        USB_1_1 = 0x0101,
+        USB_2_0 = 0x0200,
+        USB_2_1 = 0x0201
+    };
+
+    typedef struct __packed
+    {
+        uint16_t bcdUSB; //USB Specification Number which device complies too.
+
+        uint8_t	bDeviceClass; // Class Code (Assigned by USB Org)
+                                // If equal to Zero, each interface specifies it’s own class code
+                                // If equal to 0xFF, the class code is vendor specified.
+                                // Otherwise field is valid Class Code.
+
+        uint8_t	bDeviceSubClass; //Subclass Code (Assigned by USB Org)
+
+        uint8_t	bDeviceProtocol; //Protocol Code (Assigned by USB Org)
+
+        uint8_t	bMaxPacketSize; //Maximum Packet Size for Zero Endpoint. Valid Sizes are 8, 16, 32, 64
+
+        uint16_t	idVendor; //Vendor ID (Assigned by USB Org)
+
+        uint16_t	idProduct; //Product ID (Assigned by Manufacturer)
+
+        uint16_t	bcdDevice; //Device Release Number
+
+        uint8_t	iManufacturer; //Index of Manufacturer String Descriptor
+
+        uint8_t	iProduct; //Index of Product String Descriptor
+
+        uint8_t	iSerialNumber; //Index of Serial Number String Descriptor
+
+        uint8_t	bNumConfigurations; //Number of Possible Configurations
+    }
+    DevDescriptorFields;
+
+    static const int SIZE = 2 + sizeof(DevDescriptorFields);
+
+	UsbDeviceDescriptor(uint8_t * data, Length_t length) :
+		UsbDescriptor(data, length)
 	{}
 
-    inline bool init(uint8_t bcd,
+    inline bool init(uint16_t bcd,
                      uint8_t deviceClass,
                      uint8_t deviceSubClass,
                      uint8_t deviceProtocol,
@@ -173,8 +214,7 @@ public:
                      uint8_t serial,
                      uint8_t numConfigs)
     {
-        if(!UsbDescriptor::init(2 + sizeof(DevDescriptorFields),
-                                UsbDescType_Device))
+        if(!UsbDescriptor::init(SIZE, UsbDescType_Device))
             return false;
         fields()->bcdUSB = bcd;
         fields()->bDeviceClass = deviceClass;
@@ -216,36 +256,6 @@ public:
     inline uint8_t	bNumConfigurations() const { return fields()->bNumConfigurations; }
 
 private:
-    typedef struct __packed
-    {
-        uint16_t bcdUSB; //USB Specification Number which device complies too.
-
-        uint8_t	bDeviceClass; // Class Code (Assigned by USB Org)
-                                // If equal to Zero, each interface specifies it’s own class code
-                                // If equal to 0xFF, the class code is vendor specified.
-                                // Otherwise field is valid Class Code.
-
-        uint8_t	bDeviceSubClass; //Subclass Code (Assigned by USB Org)
-
-        uint8_t	bDeviceProtocol; //Protocol Code (Assigned by USB Org)
-
-        uint8_t	bMaxPacketSize; //Maximum Packet Size for Zero Endpoint. Valid Sizes are 8, 16, 32, 64
-
-        uint16_t	idVendor; //Vendor ID (Assigned by USB Org)
-
-        uint16_t	idProduct; //Product ID (Assigned by Manufacturer)
-
-        uint16_t	bcdDevice; //Device Release Number
-
-        uint8_t	iManufacturer; //Index of Manufacturer String Descriptor
-
-        uint8_t	iProduct; //Index of Product String Descriptor
-
-        uint8_t	iSerialNumber; //Index of Serial Number String Descriptor
-
-        uint8_t	bNumConfigurations; //Number of Possible Configurations
-    }
-    DevDescriptorFields;
 
     inline DevDescriptorFields * fields() const { return reinterpret_cast<DevDescriptorFields*>(restFields()); }
 };
@@ -388,6 +398,8 @@ public:
     }
 
     inline uint8_t idx() const { return _idx; }
+
+    inline operator unsigned char() const { return _idx; }
 
 private:
     uint8_t _idx;

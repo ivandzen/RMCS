@@ -239,6 +239,26 @@ public:
 
 	explicit XUsbDevice(void * handle);
 
+	bool init(uint16_t bcd,
+              uint8_t deviceClass,
+              uint8_t deviceSubClass,
+              uint8_t deviceProtocol,
+              uint8_t maxPacketSize,
+              uint16_t vendorID,
+              uint16_t productID,
+              uint16_t bcdDev,
+              const char * manufacturerStr,
+              const char * productStr,
+			  const char * serial,
+              uint8_t numConfigs)
+	{
+		return UsbDeviceDescriptor(DataPtr(_devDescData), UsbDeviceDescriptor::SIZE).
+					init(bcd, deviceClass, deviceSubClass, deviceProtocol,
+						 maxPacketSize, vendorID, productID, bcdDev,
+						 createStr(manufacturerStr), createStr(productStr),
+						 createStr(serial), numConfigs);
+	}
+
 	virtual ~XUsbDevice();
 
     bool dataOutStage(uint8_t epnum, uint8_t * pdata);
@@ -350,11 +370,11 @@ private:
     uint32_t            _dev_config_status;
     uint32_t            _dev_remote_wakeup;
     uint8_t				_dev_config;
-    UsbDeviceDescriptor	_devDescriptor;
     UsbStringDescriptor	_strings[USB_MAX_STRINGS];
     XUsbConfiguration *	_configs[USB_MAX_CONFIGS];
     XUsbInEndpoint *	_inEndpoints[USB_MAX_ENDPOINTS];
     XUsbOutEndpoint *	_outEndpoints[USB_MAX_ENDPOINTS];
+    uint8_t				_devDescData[UsbDeviceDescriptor::SIZE];
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////

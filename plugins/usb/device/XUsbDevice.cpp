@@ -422,8 +422,8 @@ void XUsbDevice::getDescriptor(UsbSetupRequest *req)
   #endif
     case UsbDescType_Device:
     {
-    	pbuf = _devDescriptor.data();
-    	len = _devDescriptor.bLength();
+    	pbuf = _devDescData;
+    	len = UsbDeviceDescriptor::SIZE;
     	break;
     }
 
