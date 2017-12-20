@@ -146,16 +146,9 @@ XUsbDevice::XUsbDevice(void * handle) :
 
 XUsbDevice::~XUsbDevice()
 {
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-
-bool XUsbDevice::setString(uint8_t idx, const UsbStringDescriptor & string)
-{
-	if(idx >= USB_MAX_STRINGS)
-		return false;
-	_strings[idx] = string;
-	return true;
+	for(int i = 0; i < USB_MAX_STRINGS; ++i)
+		if(_strings[i].isValid())
+			delete[] _strings[i].data();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -600,7 +593,8 @@ void XUsbDevice::getConfig(UsbSetupRequest *req)
 
 void XUsbDevice::getStatus(UsbSetupRequest *req)
 {
-    switch (_dev_state) {
+    switch (_dev_state)
+    {
     case DEV_ADDRESSED:
     case DEV_CONFIGURED:
 
@@ -627,7 +621,8 @@ void XUsbDevice::getStatus(UsbSetupRequest *req)
 void XUsbDevice::setFeature(UsbSetupRequest * req)
 {
 	//! @todo разобраться, что нужно делать с фичами
-    if (req->wValue == UsbFeature_REMOTE_WAKEUP) {
+    if (req->wValue == UsbFeature_REMOTE_WAKEUP)
+    {
         _dev_remote_wakeup = 1;
         _configs[_dev_config]->setupRequest(0, req);
         ctlSendStatus();
@@ -655,5 +650,24 @@ void XUsbDevice::clrFeature(UsbSetupRequest * req)
         ctlError();
         break;
     }
+}
+
+UsbStringDescriptor XUsbDevice::createStr(const char * str)
+{
+	size_t len = strlen(str);
+	for(int i = 0; i < USB_MAX_STRINGS; ++i)
+		if(!_strings[i].isValid())
+		{
+			UsbStringDescriptor desc(i, new uint8_t[2 + len], 2 + len);
+			if(!desc.init(str))
+			{
+				delete[] desc.data();
+				return UsbStringDescriptor();
+			}
+
+			_strings[i] = desc;
+			return _strings[i];
+		}
+	return UsbStringDescriptor();
 }
 

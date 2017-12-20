@@ -388,6 +388,13 @@ public:
 		UsbDescriptor(nullptr, 0)
 	{}
 
+	UsbStringDescriptor(uint8_t idx,
+						uint8_t * data,
+						uint16_t len) :
+			UsbDescriptor(data, len),
+			_idx(idx)
+	{}
+
     inline bool init(const char * str)
     {
         uint8_t len = uint8_t(strlen(str));

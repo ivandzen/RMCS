@@ -289,12 +289,9 @@ public:
     	_configs[idx] = config;
     }
 
-    //! @todo
-    inline UsbStringDescriptor createStr(const char * str) const { return UsbStringDescriptor(); }
+    UsbStringDescriptor createStr(const char * str);
 
 protected:
-	bool setString(uint8_t idx, const UsbStringDescriptor & string);
-
 	virtual void runTestMode() {}
 
 	//virtual void SOFEvent() {}

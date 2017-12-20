@@ -209,6 +209,7 @@ public:
     void pushDescriptor(const UsbDesc * descriptor);
 
     inline void setByte(uint8_t index, uint8_t value) { _data[index] = value; }
+
     inline uint8_t getByte(uint8_t index) const { return _data[index]; }
 
     inline void setWord(uint8_t index, uint16_t value) {
