@@ -9,11 +9,9 @@
 #define XUSBDEVICE_CONFIG_H_
 #include <stm32f7xx_hal.h>
 
-#ifdef ENABLE_XUSBDEVICE
-
 #define USB_MAX_EP0_SIZE 	64
+#define USB_MAX_CONFIGS		2
 #define USB_MAX_STRINGS		16
-#define USB_MAX_CONFIGS 	1
 #define USB_MAX_ENDPOINTS	6
 #define USB_MAX_INTERFACES 	4
 
@@ -51,7 +49,5 @@
 	((((ep_addr) & 0x80) == 0x80) ? \
 	(((PCD_HandleTypeDef*)handle)->IN_ep[(ep_addr) & 0x7F].is_stall) :\
 	(((PCD_HandleTypeDef*)handle)->OUT_ep[(ep_addr) & 0x7F].is_stall))
-
-#endif
 
 #endif /* XUSBDEVICE_CONFIG_H_ */

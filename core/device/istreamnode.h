@@ -17,7 +17,8 @@ public:
     IStreamNode(const char * name,
                 NodeType_t type,
                 Length_t num_packets,
-                Device * dev);
+                Device * dev,
+				uint16_t maxPacketSize);
 
     bool addChannel(IStreamChannel * channel);
 
@@ -40,8 +41,6 @@ protected:
     virtual bool nodeDataReceived(const ControlPacket & packet) final override;
 
     virtual void streamToggled(bool enabled) = 0;
-
-    virtual bool init() override;
 
 private:
     BOOL_PROP(Enabled, false,

@@ -1,14 +1,22 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-#include <vector>
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
+
+#include <vector>
 #include <string>
 #include <limits>
-#include <assert.h>
 #include <functional>
+
+template<typename T>
+struct ParamData
+{
+    uint8_t id;
+    T value;
+};
 
 typedef uint16_t    NodeType_t;
 typedef uint16_t    NodeID_t;
@@ -30,13 +38,6 @@ enum NodeStatus
 };
 
 #pragma pack(push, 1)
-
-template<typename T>
-struct ParamData
-{
-    uint8_t id;
-    T value;
-};
 
 #pragma pack(pop)
 

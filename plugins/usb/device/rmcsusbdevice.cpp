@@ -1,6 +1,8 @@
 #include <plugins/usb/device/rmcsusbdevice.h>
 #include <core/common/control_protocol.h>
 
+#ifdef ENABLE_USBDEV
+
 #define USB_SIZ_BOS_DESC                0x0C
 
 #define USBD_LPM_ENABLED 0
@@ -183,6 +185,8 @@ UsbDevice::Status RMCSUsbDevice::classDataIn(uint8_t)
 
 UsbDevice::Status RMCSUsbDevice::classSOF()
 {
+	_istream->startOfFrame();
+	_ostream->startOfFrame();
     return OK;
 }
 
@@ -208,13 +212,13 @@ void RMCSUsbDevice::onDeviceStarted()
 
     if(_istream != nullptr)
     {
-    	EndpDesc isooutep = _istream->getDescriptor();
+    	EndpDesc isooutep = _istream->getUsbDescriptor();
     	iface.addEndpoint(isooutep);
     }
 
     if(_ostream != nullptr)
     {
-    	EndpDesc isoinep = _ostream->getDescriptor();
+    	EndpDesc isoinep = _ostream->getUsbDescriptor();
     	iface.addEndpoint(isoinep);
     }
 
@@ -242,3 +246,5 @@ UsbDevice::Status RMCSUsbDevice::classSetupRequest(UsbDevice::SetupRequest *req)
 
     return OK;
 }
+
+#endif

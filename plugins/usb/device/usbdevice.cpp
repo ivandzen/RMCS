@@ -1,5 +1,7 @@
 #include "usbdevice.h"
 
+#if ENABLE_USBDEV
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -1105,3 +1107,4 @@ void UsbDevice::delay(uint32_t value)
     HAL_Delay(value);
 }
 
+#endif

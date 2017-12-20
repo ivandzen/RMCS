@@ -2,14 +2,18 @@
 #include "rmcsusbdevice.h"
 #include <plugins/usb/common/common.h>
 
+#ifdef ENABLE_USBDEV
+
 UsbIStreamNode::UsbIStreamNode(const char * name,
                                uint8_t ep_num,
                                Length_t reserve,
-                               RMCSUsbDevice * device) :
+                               RMCSUsbDevice * device,
+							   uint16_t mps) :
     IStreamNode(name,
                 NODE_TYPE_USBISTREAM,
                 reserve,
-                device->rmcsDevice()),
+                device->rmcsDevice(),
+				mps),
     UsbDeviceEP(UsbDeviceEP::EP_ISOC,
                 ep_num & 0x7F,
                 EP_ATTRIBUTES,
@@ -28,6 +32,11 @@ UsbDeviceEP::Status UsbIStreamNode::dataOut()
         prepareReceive(istreamPacket(_inPacketCounter), packetSize());
     streamDataReceived(istreamPacket(ready_index), packetSize());
     return OK;
+}
+
+void UsbIStreamNode::startOfFrame()
+{
+
 }
 
 bool UsbIStreamNode::settingsRequested(ControlPacket & packet) const
@@ -53,3 +62,5 @@ void UsbIStreamNode::streamToggled(bool enabled)
         prepareReceive(istreamPacket(_inPacketCounter), packetSize());
     }
 }
+
+#endif

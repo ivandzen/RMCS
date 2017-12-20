@@ -5,18 +5,21 @@
 IStreamNode::IStreamNode(const char * name,
                          NodeType_t type,
                          Length_t num_packets,
-                         Device * dev) :
+                         Device * dev,
+						 uint16_t maxPacketSize) :
     Node(type, name, dev),
     _enabled(false),
 	_numPackets(num_packets),
     _packetSize(0)
 {
+	_buffer.resize(_numPackets * _packetSize);
 }
 
 bool IStreamNode::addChannel(IStreamChannel * channel)
 {
     if(nodeStatus() != NODE_STAT_UNDEFINED)
         return false;
+    assert(_packetSize + channel->dataLength() < _buffer.size());
     channel->_offset = _packetSize;
     _packetSize += channel->dataLength();
     _channels.push_back(channel);
@@ -49,14 +52,6 @@ void IStreamNode::streamDataReceived(const Data * data,
         (*it)->streamDataReceived(ArrayRef<Data>(data + offset, data_length));
         offset += data_length;
     }
-}
-
-bool IStreamNode::init()
-{
-    if(!Node::init())
-        return false;
-    _buffer.resize(_numPackets * _packetSize);
-    return true;
 }
 
 bool IStreamNode::toggleStream(bool enabled)

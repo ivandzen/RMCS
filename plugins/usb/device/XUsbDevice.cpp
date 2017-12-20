@@ -7,7 +7,6 @@
 
 #include <plugins/usb/device/XUsbDevice.h>
 
-#ifdef ENABLE_XUSBDEVICE
 
 #define LOBYTE(x)  ((uint8_t)(x & 0x00FF))
 #define HIBYTE(x)  ((uint8_t)((x & 0xFF00) >>8))
@@ -18,82 +17,14 @@
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-void UsbEndpoint::reportStatus(UsbZeroEndpoint * ep0)
+void XUsbEndpoint::reportStatus(XUsbZeroEndpoint * ep0)
 {
 	ep0->transmit(reinterpret_cast<uint8_t*>(&_status), 2);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-bool UsbZeroEndpoint::epDataOut(uint8_t * pdata)
-{
-	if ( _state == EP0_DATA_OUT)
-	{
-		if(_outRemLength > _maxPacket)
-		{
-			_outRemLength -=  _maxPacket;
-			UsbOutEndpoint::receive(pdata, MIN(_outRemLength ,_maxPacket));
-		}
-		else
-		{
-			if(isDeviceConfigured())
-				ep0RxReady();
-			ctlSendStatus();
-		}
-	}
-	return true;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-
-bool UsbZeroEndpoint::epDataIn(uint8_t * pdata)
-{
-	if (_state == EP0_DATA_IN)
-	{
-		if(_inRemLength > _maxPacket)
-		{
-			_inRemLength -=  _maxPacket;
-			UsbInEndpoint::transmit(pdata, _inRemLength);
-
-			/* Prepare endpoint for premature end of transfer */
-			UsbOutEndpoint::receive(nullptr, 0);
-		}
-		else
-		{ /* last packet is MPS multiple, so send ZLP packet */
-			if((_inTotalLength % _maxPacket == 0) &&
-				(_inTotalLength >= _maxPacket) &&
-				(_inTotalLength < _dataLength ))
-			{
-				UsbInEndpoint::transmit(nullptr, 0);
-				_dataLength = 0;
-
-				/* Prepare endpoint for premature end of transfer */
-				UsbOutEndpoint::receive(nullptr, 0);
-			}
-			else
-			{
-				if(isDeviceConfigured())
-					ep0TxSent();
-				ctlReceiveStatus();
-			}
-		}
-	}
-
-	//! @attention нужно этот код активировать на всякий случай
-	/*
-	if (_dev_test_mode == 1)
-	{
-		runTestMode();
-		_dev_test_mode = 0;
-	}
-	*/
-
-	return true;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-
-bool UsbZeroEndpoint::setupStage(uint8_t * pdata)
+void XUsbZeroEndpoint::setupStage(uint8_t * pdata)
 {
     _request.bmRequest     = *(uint8_t *)  (pdata);
     _request.bRequest      = *(uint8_t *)  (pdata +  1);
@@ -119,35 +50,96 @@ bool UsbZeroEndpoint::setupStage(uint8_t * pdata)
         break;
 
     default:
-    {
-    	if(_request.bmRequest & 0x80)
-    		UsbInEndpoint::stall();
-    	else
-    		UsbOutEndpoint::stall();
+    	XUsbInEndpoint::stall();
         break;
     }
-    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-bool UsbConfiguration::addInEndpoint(UsbInEndpoint * ep)
+bool XUsbZeroEndpoint::epDataOut(uint8_t * pdata)
 {
-	return _device->addInEndpoint(ep);
+	if ( _state == EP0_DATA_OUT)
+	{
+		if(_outRemLength > XUsbOutEndpoint::wMaxPacketSize())
+		{
+			_outRemLength -=  XUsbOutEndpoint::wMaxPacketSize();
+			XUsbOutEndpoint::receive(pdata, MIN(_outRemLength , XUsbOutEndpoint::wMaxPacketSize()));
+		}
+		else
+		{
+			if(isDeviceConfigured())
+				ep0RxReady(&_request);
+			ctlSendStatus();
+		}
+	}
+	return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-bool UsbConfiguration::addOutEndpoint(UsbOutEndpoint * ep)
+bool XUsbZeroEndpoint::epDataIn(uint8_t * pdata)
 {
-	return _device->addOutEndpoint(ep);
+	if (_state == EP0_DATA_IN)
+	{
+		if(_inRemLength > XUsbOutEndpoint::wMaxPacketSize())
+		{
+			_inRemLength -=  XUsbOutEndpoint::wMaxPacketSize();
+			XUsbInEndpoint::transmit(pdata, _inRemLength);
+
+			/* Prepare endpoint for premature end of transfer */
+			XUsbOutEndpoint::receive(nullptr, 0);
+		}
+		else
+		{ /* last packet is MPS multiple, so send ZLP packet */
+			if((_inTotalLength % XUsbOutEndpoint::wMaxPacketSize() == 0) &&
+				(_inTotalLength >= XUsbOutEndpoint::wMaxPacketSize()) &&
+				(_inTotalLength < _dataLength ))
+			{
+				XUsbInEndpoint::transmit(nullptr, 0);
+				_dataLength = 0;
+
+				/* Prepare endpoint for premature end of transfer */
+				XUsbOutEndpoint::receive(nullptr, 0);
+			}
+			else
+			{
+				if(isDeviceConfigured())
+					ep0TxSent(&_request);
+				ctlReceiveStatus();
+			}
+		}
+	}
+
+	//! @attention нужно этот код активировать на всякий случай
+	/*
+	if (_dev_test_mode == 1)
+	{
+		runTestMode();
+		_dev_test_mode = 0;
+	}
+	*/
+
+	return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-XUsbDevice::XUsbDevice()
-{
+#define MAX_PACKET 64
 
+XUsbDevice::XUsbDevice(void * handle) :
+		XUsbZeroEndpoint(handle, MAX_PACKET),
+		_handle(handle),
+		_dev_test_mode(false),
+		_dev_old_state(DEV_DEFAULT),
+		_dev_state(DEV_DEFAULT),
+		_dev_address(0),
+	    _dev_config_status(0),
+	    _dev_remote_wakeup(0),
+	    _dev_config(0)
+{
+	_inEndpoints[0] = this;
+	_outEndpoints[0] = this;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -163,16 +155,6 @@ bool XUsbDevice::setString(uint8_t idx, const UsbStringDescriptor & string)
 	if(idx >= USB_MAX_STRINGS)
 		return false;
 	_strings[idx] = string;
-	return true;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-
-bool  XUsbDevice::setConfig(uint8_t idx, UsbConfiguration * config)
-{
-	if((idx == 0) || (idx > USB_MAX_CONFIGS))
-		return false;
-	_configs[idx] = config;
 	return true;
 }
 
@@ -205,7 +187,9 @@ bool  XUsbDevice::dataInStage(uint8_t epnum, uint8_t * pdata)
 void  XUsbDevice::SOF()
 {
 	if(_dev_state == DEV_CONFIGURED)
-		SOFEvent();
+	{
+		//SOFEvent();
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -214,7 +198,7 @@ void  XUsbDevice::suspend()
 {
 	_dev_old_state =  _dev_state;
 	_dev_state  = DEV_SUSPENDED;
-	suspendEvent();
+	//suspendEvent();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -222,31 +206,29 @@ void  XUsbDevice::suspend()
 void  XUsbDevice::resume()
 {
 	_dev_state = _dev_old_state;
-	resumeEvent();
+	//resumeEvent();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
 void  XUsbDevice::isoOutIncomplete(uint8_t epnum)
 {
-	if(_dev_state == DEV_CONFIGURED)
-		isoOutIncompleteEvent(epnum);
+	//if(_dev_state == DEV_CONFIGURED)
+	//	isoOutIncompleteEvent(epnum);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
 void XUsbDevice::isoInIncomplete(uint8_t epnum)
 {
-	if(_dev_state == DEV_CONFIGURED)
-		isoInIncompleteEvent(epnum);
+	//if(_dev_state == DEV_CONFIGURED)
+	//	isoInIncompleteEvent(epnum);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
 void XUsbDevice::reset(Speed speed)
 {
-	//! @attention !!!
-	_dev_speed = speed;
     /* Open EP0 OUT */
 	_inEndpoints[0]->open();
 
@@ -257,7 +239,7 @@ void XUsbDevice::reset(Speed speed)
     _dev_state = DEV_DEFAULT;
 
     _configs[_dev_config]->deInit();
-    resetEvent();
+    //resetEvent();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -310,38 +292,33 @@ void  XUsbDevice::stdItfReq(UsbSetupRequest * req)
     {
     case DEV_CONFIGURED:
     {
-        if (LOBYTE(req->wIndex) <= _configs[_dev_config]->bNumInterfaces())
+    	switch (req->bmRequest & REQ_TYPE_MASK)
         {
-        	switch (req->bmRequest & REQ_TYPE_MASK)
-        	{
-        	case REQ_TYPE_CLASS :
-        	{
-        		ret = _configs[_dev_config]->setupRequest(req);
-        		break;
-        	}
-
-        	case REQ_TYPE_STANDARD:
-        	{
-        		switch (req->bRequest)
-        		{
-        		case REQ_GET_INTERFACE :
-        			ctlTransmit(&ifalt, 1);
-        			break;
-
-        		case REQ_SET_INTERFACE :
-        		{
-        			break;
-        		}
-        		}
-        	}
-        	}
-
-            if((req->wLength == 0) && ret)
-                ctlSendStatus();
+        case REQ_TYPE_CLASS :
+        {
+        	if(!_configs[_dev_config]->setupRequest(LOBYTE(req->wIndex), req))
+        		ctlError();
+        	break;
         }
-        else
-        	ctlError();
-        break;
+
+        case REQ_TYPE_STANDARD:
+        {
+        	switch (req->bRequest)
+        	{
+        	case REQ_GET_INTERFACE :
+        		ctlTransmit(&ifalt, 1);
+        		break;
+
+        	case REQ_SET_INTERFACE :
+        	{
+        		break;
+        		}
+        	}
+        }
+        }
+
+        if((req->wLength == 0) && ret)
+        	ctlSendStatus();
     }
 
     default:
@@ -356,7 +333,7 @@ void  XUsbDevice::stdEPReq(UsbSetupRequest * req)
 {
     uint8_t ep_addr  = LOBYTE(req->wIndex);
 
-    UsbEndpoint * ep;
+    XUsbEndpoint * ep;
     if(ep_addr & 0x80)
     	ep = _inEndpoints[ep_addr & 0x7F];
     else
@@ -417,6 +394,20 @@ void  XUsbDevice::stdEPReq(UsbSetupRequest * req)
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
+void XUsbDevice::ep0RxReady(UsbSetupRequest * req)
+{
+	_configs[_dev_config]->ep0RxReady(req);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+void XUsbDevice::ep0TxSent(UsbSetupRequest * req)
+{
+	_configs[_dev_config]->ep0TxSent(req);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
 void XUsbDevice::getDescriptor(UsbSetupRequest *req)
 {
     uint16_t len;
@@ -438,15 +429,17 @@ void XUsbDevice::getDescriptor(UsbSetupRequest *req)
 
     case UsbDescType_Configuration :
     {
-    	UsbConfiguration * config;
-
-    	if(_dev_speed == USBD_SPEED_HIGH )
-    		config = _configs[_hsConfIdx];
+    	if(XUsbConfiguration * config = _configs[_dev_config])
+    	{
+    		pbuf = config->data();
+    		len = config->wTotalLength();
+    	}
     	else
-    		config = _configs[_defConfIdx];
+    	{
+    		pbuf = nullptr;
+    		len = 0;
+    	}
 
-    	pbuf = (uint8_t *)(config->data());
-    	len = config->wTotalLength();
         break;
 
     }
@@ -455,36 +448,22 @@ void XUsbDevice::getDescriptor(UsbSetupRequest *req)
     {
     	uint8_t str_idx = (uint8_t)(req->wValue);
     	if((str_idx < USB_MAX_STRINGS) && (_strings[str_idx].isValid()))
+    	{
     		pbuf = _strings[str_idx].data();
+    		len = _strings[str_idx].bLength();
+    	}
     	else
     		ctlError();
     	break;
     }
 
     case UsbDescType_DeviceQualifier :
-        if(_dev_speed == USBD_SPEED_HIGH  )
-        {
-        	//! @attention
-        	pbuf = nullptr;
-        	len = 0;
-            break;
-        }
-        else {
-            ctlError();
-            return;
-        }
+        ctlError();
+        break;
 
     case UsbDescType_OtherSpeedConfiguration :
-        if(_dev_speed == USBD_SPEED_HIGH  )
-        {
-            pbuf   = (uint8_t *)getOtherSpeedConfigDescriptor(&len);
-            pbuf[1] = UsbDesc::DescOtherSpeedConfiguration;
-            break;
-        }
-        else {
-            ctlError();
-            return;
-        }
+    	ctlError();
+    	break;
 
     default:
         ctlError();
@@ -547,8 +526,7 @@ void XUsbDevice::setConfig(UsbSetupRequest *req)
     	{
     		_dev_config = cfgidx;
     		_dev_state = DEV_CONFIGURED;
-    		if(!_configs[cfgidx]->init((UsbInEndpoint*)_inEndpoints,
-    								   (UsbOutEndpoint*)_outEndpoints))
+    		if(!_configs[cfgidx]->initDefaultIface(this))
     		{
     			ctlError();
     			return;
@@ -576,8 +554,7 @@ void XUsbDevice::setConfig(UsbSetupRequest *req)
 
     		/* set new configuration */
     		_dev_config = cfgidx;
-    		if(!_configs[cfgidx]->init((UsbInEndpoint*)_inEndpoints,
-    								   (UsbOutEndpoint*)_outEndpoints))
+    		if(!_configs[cfgidx]->initDefaultIface(this))
     		{
     			ctlError();
     			return;
@@ -600,7 +577,6 @@ void XUsbDevice::setConfig(UsbSetupRequest *req)
 
 void XUsbDevice::getConfig(UsbSetupRequest *req)
 {
-	static const uint8_t DEFAULT_CONFIG = 0;
 
     if (req->wLength != 1)
         ctlError();
@@ -609,9 +585,6 @@ void XUsbDevice::getConfig(UsbSetupRequest *req)
         switch (_dev_state )
         {
         case DEV_ADDRESSED:
-            ctlTransmit ((uint8_t *)&DEFAULT_CONFIG, 1);
-            break;
-
         case DEV_CONFIGURED:
             ctlTransmit ((uint8_t *)&_dev_config, 1);
             break;
@@ -653,9 +626,10 @@ void XUsbDevice::getStatus(UsbSetupRequest *req)
 
 void XUsbDevice::setFeature(UsbSetupRequest * req)
 {
+	//! @todo разобраться, что нужно делать с фичами
     if (req->wValue == UsbFeature_REMOTE_WAKEUP) {
         _dev_remote_wakeup = 1;
-        _configs[_dev_config]->setupRequest(req);
+        _configs[_dev_config]->setupRequest(0, req);
         ctlSendStatus();
     }
 }
@@ -671,7 +645,7 @@ void XUsbDevice::clrFeature(UsbSetupRequest * req)
         if (req->wValue == UsbFeature_REMOTE_WAKEUP)
         {
             _dev_remote_wakeup = 0;
-            _configs[_dev_config]->setupRequest(req);
+            _configs[_dev_config]->setupRequest(0, req);
             ctlSendStatus();
         }
         break;
@@ -683,4 +657,3 @@ void XUsbDevice::clrFeature(UsbSetupRequest * req)
     }
 }
 
-#endif //ENABLE_XUSBDEVICE

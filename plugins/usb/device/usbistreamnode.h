@@ -13,9 +13,12 @@ public:
     UsbIStreamNode(const char * name,
                    uint8_t ep_num,
                    Length_t reserve,
-                   RMCSUsbDevice * device);
+                   RMCSUsbDevice * device,
+				   uint16_t mps);
 
     virtual Status dataOut() override;
+
+    void startOfFrame();
 
 protected:
     virtual bool settingsRequested(ControlPacket & packet) const override;

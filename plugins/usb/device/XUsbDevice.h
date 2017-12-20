@@ -8,85 +8,74 @@
 #ifndef XUSBDEVICE_H_
 #define XUSBDEVICE_H_
 
-#ifdef ENABLE_XUSBDEVICE
-
 #include <plugins/usb/common/usbdescriptors.h>
 #include "XUsbDevice_Config.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-class UsbZeroEndpoint;
+class XUsbIface;
+class XUsbZeroEndpoint;
 
-class __packed UsbEndpoint :
+class XUsbEndpoint :
 		public UsbEPDescriptor
 {
 public:
-	UsbEndpoint(void * handle,
-				const UsbEPDescriptor & other) :
-		UsbEPDescriptor(other),
-		_handle(handle),
-		_status(0)
+	XUsbEndpoint(const UsbEPDescriptor & descriptor,
+				 XUsbIface * iface) :
+		UsbEPDescriptor(descriptor),
+		_handle(nullptr),
+		_status(0),
+		_iface(iface)
 	{}
 
-	virtual UsbEPDescriptor getDescriptor(const UsbEPDescriptor & descriptor) = 0;
+	virtual ~XUsbEndpoint() {}
 
-	virtual ~UsbEndpoint() {}
-
-	virtual bool setupRequest(UsbSetupRequest * req) = 0;
+	virtual bool setupRequest(UsbSetupRequest * req) { return false; }
 
 	inline void open()
 	{
 		HAL_XUsbDevice_OpenEP(_handle, bEndpointAddress(), wMaxPacketSize(), bmAttributes() & UsbEPTypeMask);
-		openEvent();
 	}
 
 	inline void close()
 	{
 		HAL_XUsbDevice_CloseEP(_handle, bEndpointAddress());
-		closeEvent();
 	}
 
 	inline void stall()
 	{
 		HAL_XUsbDevice_StallEP(_handle, bEndpointAddress());
 		_status = 0x0001;
-		stallEvent();
 	}
 
 	inline void clearStall()
 	{
 		HAL_XUsbDevice_ClearStallEP(_handle, bEndpointAddress());
 		_status = 0x0001;
-		clearStallEvent();
 	}
 
-	void reportStatus(UsbZeroEndpoint * ep0);
+	void reportStatus(XUsbZeroEndpoint * ep0);
+
+	inline void setHandle(void * handle) { _handle = handle; }
 
 	inline void * handle() const { return _handle; }
 
-protected:
-	virtual void stallEvent() {}
-
-	virtual void clearStallEvent() {}
-
-	virtual void openEvent() {}
-
-	virtual void closeEvent() {}
+	XUsbIface * iface() const { return _iface; }
 
 private:
 	void * 		_handle;
 	uint16_t	_status;
+	XUsbIface *	_iface;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-class __packed UsbInEndpoint :
-		public UsbEndpoint
+class __packed XUsbInEndpoint :
+		public XUsbEndpoint
 {
 public:
-	UsbInEndpoint(void * handle,
-				  const UsbEPDescriptor & other) :
-		UsbEndpoint(handle, other)
+	explicit XUsbInEndpoint(const XUsbEndpoint & source) :
+		XUsbEndpoint(source)
 	{}
 
 	virtual bool epDataIn(uint8_t * pdata) = 0;
@@ -99,13 +88,12 @@ public:
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-class __packed UsbOutEndpoint :
-		public UsbEndpoint
+class __packed XUsbOutEndpoint :
+		public XUsbEndpoint
 {
 public:
-	UsbOutEndpoint(void * handle,
-					const UsbEPDescriptor & other) :
-		UsbEndpoint(handle, other)
+	explicit XUsbOutEndpoint(const XUsbEndpoint & source) :
+		XUsbEndpoint(source)
 	{}
 
 	virtual bool epDataOut(uint8_t * pdata) = 0;
@@ -118,46 +106,32 @@ public:
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-class UsbAbstractDevice
+class __packed XUsbZeroEndpoint :
+		public XUsbInEndpoint,
+		public XUsbOutEndpoint
 {
 public:
-	typedef void * Handle;
-
-	virtual ~UsbAbstractDevice() {}
-
-	virtual void stdDevReq(UsbSetupRequest * req) = 0;
-
-	virtual void stdItfReq(UsbSetupRequest * req) = 0;
-
-	virtual void stdEPReq(UsbSetupRequest * req) = 0;
-
-	inline Handle handle() const { return _handle; }
-
-private:
-	Handle _handle;
-};
-
-/////////////////////////////////////////////////////////////////////////////////////////
-
-class __packed UsbZeroEndpoint :
-		public UsbInEndpoint,
-		public UsbOutEndpoint
-{
-public:
-	UsbZeroEndpoint(void * handle,
+	XUsbZeroEndpoint(void * handle,
 					uint8_t max_packet) :
-		UsbInEndpoint(handle, UsbEPDescriptor()),
-		UsbOutEndpoint(handle, UsbEPDescriptor()),
+		XUsbInEndpoint(XUsbEndpoint(UsbEPDescriptor(_inEpData, UsbEPDescriptor::DEFAULT_LENGTH), nullptr)),
+		XUsbOutEndpoint(XUsbEndpoint(UsbEPDescriptor(_outEpData, UsbEPDescriptor::DEFAULT_LENGTH), nullptr)),
+		//XUsbInEndpoint(XUsb//UsbEPDescriptor(_inEpData, UsbEPDescriptor::DEFAULT_LENGTH),
+		//			   UsbEPDescriptor::DEFAULT_LENGTH, 0x80, 0x00, max_packet, 0),
+		//XUsbOutEndpoint(UsbEPDescriptor(_outEpData, UsbEPDescriptor::DEFAULT_LENGTH),
+		//		        UsbEPDescriptor::DEFAULT_LENGTH, 0x00, 0x00, max_packet, 0),
 	    _state(EP0_IDLE),
 	    _inTotalLength(0),
 	    _inRemLength(0),
 	    _outTotalLength(0),
 	    _outRemLength(0),
-	    _maxPacket(max_packet),
 	    _dataLength(0)
-	{}
+	{
+		XUsbInEndpoint::setHandle(handle);
+		XUsbOutEndpoint::setHandle(handle);
 
-	inline uint8_t ctlMaxPacket() const { return _maxPacket; }
+		XUsbInEndpoint::init(UsbEPDescriptor::DEFAULT_LENGTH, 0x80, 0x00, max_packet, 0);
+		XUsbOutEndpoint::init(UsbEPDescriptor::DEFAULT_LENGTH, 0x00, 0x00, max_packet, 0);
+	}
 
 	inline void ctlTransmit(uint8_t * pdata, uint16_t len)
 	{
@@ -166,7 +140,7 @@ public:
 		_inTotalLength 	= len;
 		_inRemLength	= len;
 		/* Start the transfer */
-		UsbInEndpoint::transmit(pdata, len);
+		XUsbInEndpoint::transmit(pdata, len);
 	}
 
 	inline void ctlReceive(uint8_t * pdata, uint16_t len)
@@ -176,7 +150,7 @@ public:
 		_outTotalLength = len;
 		_outRemLength   = len;
 		/* Start the transfer */
-		UsbOutEndpoint::receive(pdata, len);
+		XUsbOutEndpoint::receive(pdata, len);
 	}
 
 	inline void ctlSendStatus()
@@ -185,7 +159,7 @@ public:
 		_state = EP0_STATUS_IN;
 
 		/* Start the transfer */
-		UsbInEndpoint::transmit(nullptr, 0);
+		XUsbInEndpoint::transmit(nullptr, 0);
 	}
 
 	inline void ctlReceiveStatus()
@@ -193,15 +167,15 @@ public:
 	    /* Set EP0 State */
 	    _state = EP0_STATUS_OUT;
 	   /* Start the transfer */
-	    UsbOutEndpoint::receive (nullptr, 0);
+	    XUsbOutEndpoint::receive (nullptr, 0);
 	}
 
-	bool setupStage(uint8_t * pdata);
+	void setupStage(uint8_t * pdata);
 
 	inline void ctlError()
 	{
-		UsbInEndpoint::stall();
-		UsbOutEndpoint::stall();
+		XUsbInEndpoint::stall();
+		XUsbOutEndpoint::stall();
 	}
 
 protected:
@@ -213,9 +187,9 @@ protected:
 
 	virtual void stdEPReq(UsbSetupRequest * req) = 0;
 
-	virtual void ep0TxSent() {}
+	virtual void ep0TxSent(UsbSetupRequest * req) = 0;
 
-	virtual void ep0RxReady() {}
+	virtual void ep0RxReady(UsbSetupRequest * req) = 0;
 
 	virtual bool epDataOut(uint8_t * pdata) final override;
 
@@ -239,63 +213,20 @@ private:
     uint32_t		_inRemLength;
     uint32_t		_outTotalLength;
     uint32_t		_outRemLength;
-    uint32_t		_maxPacket;
     uint16_t		_dataLength;
     UsbSetupRequest _request;
+    uint8_t 		_inEpData[UsbEPDescriptor::DEFAULT_LENGTH];
+    uint8_t 		_outEpData[UsbEPDescriptor::DEFAULT_LENGTH];
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-class UsbInterface
-{
-public:
-	virtual bool buildDescriptor(UsbInterfaceDescriptor & descriptor) = 0;
-
-	UsbInEndpoint * getInEndpoint(uint8_t idx) const;
-
-	UsbOutEndpoint * getOutEndpoint(uint8_t idx) const;
-
-};
-
-/////////////////////////////////////////////////////////////////////////////////////////
-
-class XUsbDevice;
-
-class __packed UsbConfiguration :
-		public UsbConfigDescriptor
-{
-public:
-	virtual ~UsbConfiguration() {}
-
-	virtual bool buildDescriptor(UsbConfigDescriptor & descriptor) = 0;
-
-	virtual bool init(UsbInEndpoint * inEndpoints,
-					  UsbOutEndpoint * outEndpoints) = 0;
-
-	virtual void deInit() = 0;
-
-	virtual bool setupRequest(UsbSetupRequest * req) = 0;
-
-	bool setInterface(UsbInterface * interface)
-	{
-
-	}
-
-protected:
-    bool	addInEndpoint(UsbInEndpoint * ep);
-
-    bool	addOutEndpoint(UsbOutEndpoint * ep);
-
-private:
-	XUsbDevice * _device;
-};
-
-/////////////////////////////////////////////////////////////////////////////////////////
+class XUsbConfiguration;
 
 class __packed XUsbDevice :
-	public UsbZeroEndpoint
+	public XUsbZeroEndpoint
 {
-	friend class UsbConfiguration;
+	friend class XUsbIface;
 
 public:
     typedef enum
@@ -306,7 +237,7 @@ public:
     }
     Speed;
 
-	XUsbDevice();
+	explicit XUsbDevice(void * handle);
 
 	virtual ~XUsbDevice();
 
@@ -326,35 +257,50 @@ public:
 
     void isoInIncomplete(uint8_t epnum);
 
-    virtual void connectEvent();
+    virtual void connected() {}
 
-    virtual void disconnectEvent();
+    virtual void disconnected() {}
+
+    inline void * handle() const { return _handle; }
+
+    inline void setConfig(uint8_t idx, XUsbConfiguration * config)
+    {
+    	assert(idx < USB_MAX_CONFIGS);
+    	_configs[idx] = config;
+    }
+
+    //! @todo
+    inline UsbStringDescriptor createStr(const char * str) const { return UsbStringDescriptor(); }
 
 protected:
 	bool setString(uint8_t idx, const UsbStringDescriptor & string);
 
-	bool setConfig(uint8_t idx, UsbConfiguration * config);
-
 	virtual void runTestMode() {}
 
-	virtual void SOFEvent() {}
+	//virtual void SOFEvent() {}
 
-	virtual void suspendEvent() {}
+	//virtual void suspendEvent() {}
 
-	virtual void resumeEvent() {}
+	//virtual void resumeEvent() {}
 
-	virtual void isoOutIncompleteEvent(uint8_t epnum) {}
+	//virtual void isoOutIncompleteEvent(uint8_t epnum) {}
 
-	virtual void isoInIncompleteEvent(uint8_t epnum) {}
+	//virtual void isoInIncompleteEvent(uint8_t epnum) {}
 
-	virtual void resetEvent() {}
+	//virtual void resetEvent() {}
 
 private:
+	virtual bool isDeviceConfigured() const final override { return _dev_state == DEV_CONFIGURED; }
+
     virtual void stdDevReq(UsbSetupRequest * req) final override;
 
     virtual void stdItfReq(UsbSetupRequest * req) final override;
 
     virtual void stdEPReq(UsbSetupRequest * req) final override;
+
+	virtual void ep0TxSent(UsbSetupRequest * req) final override;
+
+	virtual void ep0RxReady(UsbSetupRequest * req) final override;
 
     void 	setAddress(UsbSetupRequest * req);
 
@@ -370,9 +316,17 @@ private:
 
     void 	getDescriptor(UsbSetupRequest * req);
 
-    bool	addInEndpoint(UsbInEndpoint * ep);
+    inline void	setInEndpoint(uint8_t epnum, XUsbInEndpoint * ep)
+    {
+    	assert(epnum < USB_MAX_ENDPOINTS);
+    	_inEndpoints[epnum] = ep;
+    }
 
-    bool	addOutEndpoint(UsbOutEndpoint * ep);
+    inline void setOutEndpoint(uint8_t epnum, XUsbOutEndpoint * ep)
+    {
+    	assert(epnum < USB_MAX_ENDPOINTS);
+    	_outEndpoints[epnum] = ep;
+    }
 
     enum DeviceState
 	{
@@ -388,11 +342,8 @@ private:
         CONFIG_SELF_POWERED     = 1
     };
 
-    uint8_t				_hsConfIdx;
-    uint8_t				_defConfIdx;
     void *				_handle;
     bool				_dev_test_mode;
-    Speed               _dev_speed;
     DeviceState         _dev_old_state;
     DeviceState         _dev_state;
     uint8_t				_dev_address;
@@ -401,11 +352,135 @@ private:
     uint8_t				_dev_config;
     UsbDeviceDescriptor	_devDescriptor;
     UsbStringDescriptor	_strings[USB_MAX_STRINGS];
-    UsbConfiguration *	_configs[USB_MAX_CONFIGS];
-    UsbInEndpoint *		_inEndpoints[USB_MAX_ENDPOINTS];
-    UsbOutEndpoint *	_outEndpoints[USB_MAX_ENDPOINTS];
+    XUsbConfiguration *	_configs[USB_MAX_CONFIGS];
+    XUsbInEndpoint *	_inEndpoints[USB_MAX_ENDPOINTS];
+    XUsbOutEndpoint *	_outEndpoints[USB_MAX_ENDPOINTS];
 };
 
-#endif //ENABLE_XUSBDEVICE
+/////////////////////////////////////////////////////////////////////////////////////////
+
+class XUsbIface :
+		public UsbInterfaceDescriptor
+{
+public:
+	explicit XUsbIface(const UsbInterfaceDescriptor & self) :
+		UsbInterfaceDescriptor(self),
+		_device(nullptr)
+	{}
+
+	virtual bool setupRequest(UsbSetupRequest * req) = 0;
+
+	virtual void ep0RxReady(UsbSetupRequest * req) = 0;
+
+	virtual void ep0TxSent(UsbSetupRequest * req) = 0;
+
+	inline void init(XUsbDevice * dev)
+	{
+		_device = dev;
+		for(int epnum = 0; epnum < USB_MAX_ENDPOINTS; ++epnum)
+		{
+			XUsbInEndpoint * inep = static_cast<XUsbInEndpoint*>(getInEndpoint(epnum));
+			XUsbOutEndpoint * outep = static_cast<XUsbOutEndpoint*>(getOutEndpoint(epnum));
+
+			if(inep != nullptr)
+				inep->setHandle(dev->handle());
+
+			if(outep != nullptr)
+				outep->setHandle(dev->handle());
+
+			_device->setInEndpoint(epnum, static_cast<XUsbInEndpoint*>(getInEndpoint(epnum)));
+			_device->setOutEndpoint(epnum, static_cast<XUsbOutEndpoint*>(getOutEndpoint(epnum)));
+		}
+	}
+
+	inline bool isInitialized() const { return _device != nullptr; }
+
+	inline void release() { _device = nullptr; }
+
+	inline XUsbEndpoint beginEP() { return XUsbEndpoint(UsbInterfaceDescriptor::beginEP(), this); }
+
+	inline bool endEP(XUsbEndpoint & ep) { return UsbInterfaceDescriptor::endEP(ep); }
+
+protected:
+	inline void ep0Transmit(uint8_t * pbuf, uint16_t size)
+	{
+		_device->ctlTransmit(pbuf, size);
+	}
+
+	inline void ep0Receive(uint8_t * pbuf, uint16_t size)
+	{
+		_device->ctlReceive(pbuf, size);
+	}
+
+private:
+	XUsbDevice * _device;
+};
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+#define USB_MAX_IFACES 8
+
+class __packed XUsbConfiguration :
+	public UsbConfigDescriptor
+{
+public:
+	static const uint8_t DefaultIface = 0;
+
+	typedef enum
+	{
+		XUSBCFG_SUCCESS = 0,
+		XUSBCFG_ERR_BEG_IFACE = -1,
+		XUSBCFG_ERR_BUILD_IFACE = - 2,
+	}
+	ErrCode;
+
+	explicit XUsbConfiguration(const UsbConfigDescriptor & other) :
+		UsbConfigDescriptor(other),
+		_iface(0)
+	{
+		for(int i = 0; i < USB_MAX_IFACES; ++i)
+			_interfaces[i] = nullptr;
+	}
+
+	virtual ~XUsbConfiguration() {}
+
+	inline bool initIface(uint8_t idx, XUsbDevice * device) const
+	{
+		if((idx < USB_MAX_IFACES) && (_interfaces[idx] != nullptr))
+			return false;
+
+		_interfaces[idx]->init(device);
+		return true;
+	}
+
+	inline bool initDefaultIface(XUsbDevice * device) const
+	{
+		return initIface(DefaultIface, device);
+	}
+
+	inline void deInit()
+	{
+		//! @todo
+	}
+
+	inline bool setupRequest(uint8_t iface, UsbSetupRequest * req)
+	{
+		return _interfaces[iface]->setupRequest(req);
+	}
+
+	inline void ep0RxReady(UsbSetupRequest * req)
+	{
+		_interfaces[_iface]->ep0RxReady(req);
+	}
+
+	inline void ep0TxSent(UsbSetupRequest * req)
+	{
+		_interfaces[_iface]->ep0TxSent(req);
+	}
+
+private:
+	uint8_t			_iface;
+	XUsbIface 	* 	_interfaces[USB_MAX_IFACES];
+};
 
 #endif /* XUSBDEVICE_H_ */

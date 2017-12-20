@@ -3,7 +3,7 @@
 #include <core/common/arrayref.h>
 #include <string.h>
 
-#define __packed __attribute__((packed))
+//#define __packed __attribute__((packed))
 
 typedef struct __packed
 {
@@ -256,6 +256,35 @@ class UsbEPDescriptor :
         public UsbDescriptor
 {
 public:
+	static const int DEFAULT_LENGTH = 7;
+
+	typedef enum
+	{
+		EP_CTRL = 0,
+		EP_ISOC = 1,
+		EP_BULK = 2,
+		EP_INTR = 3
+	}
+	EPType_t;
+
+    typedef enum
+    {
+        SYNC_MODE_NONE                             = 0,
+        SYNC_MODE_ASYNC                            = (1 << 2),
+        SYNC_MODE_ADAPTIVE                         = (2 << 2),
+        SYNC_MODE_SYNC                             = (3 << 2)
+    }
+    IsoEPSync_t;
+
+    typedef enum
+    {
+        USAGE_MODE_DATA                            = 0,
+        USAGE_MODE_FEEDBACK                        = (1 << 4),
+        USAGE_MODE_EXFBDATA                        = (2 << 4),
+        USAGE_MODE_RESERVED                        = (3 << 4)
+    }
+    IsoEPUsageMode;
+
 	UsbEPDescriptor() :
 		UsbDescriptor()
 	{}
@@ -341,10 +370,38 @@ public:
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+class __packed UsbStringDescriptor :
+        public UsbDescriptor
+{
+public:
+	UsbStringDescriptor() :
+		UsbDescriptor(nullptr, 0)
+	{}
+
+    inline bool init(const char * str)
+    {
+        uint8_t len = uint8_t(strlen(str));
+        if(!UsbDescriptor::init(2 + len, UsbDescType_String))
+            return false;
+        memcpy(restFields(), str, len);
+        return true;
+    }
+
+    inline uint8_t idx() const { return _idx; }
+
+private:
+    uint8_t _idx;
+};
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 class UsbInterfaceDescriptor :
         public UsbDescriptor
 {
 public:
+	static const uint8_t MaxEndpoints = 8;
+
     UsbInterfaceDescriptor(uint8_t * data, Length_t length) :
         UsbDescriptor (data, length),
         _totalLength(0)
@@ -355,20 +412,20 @@ public:
                      uint8_t ifaceClass,
                      uint8_t ifaceSubClass,
                      uint8_t protocol,
-                     uint8_t ifaceStr)
+					 const UsbStringDescriptor & ifaceStr)
     {
-        if(!UsbDescriptor::init(2 + sizeof(InterfaceDescriptorFields),
-                                UsbDescType_Interface))
-            return false;
-        _totalLength = 2 + sizeof(InterfaceDescriptorFields);
-        fields()->bInterfaceNumber = ifaceNumber;
-        fields()->bAlternateSetting = altSetting;
-        fields()->bNumEndpoints = 0;
-        fields()->bInterfaceClass = ifaceClass;
-        fields()->bInterfaceSubClass = ifaceSubClass;
-        fields()->bInterfaceProtocol = protocol;
-        fields()->iInterface = ifaceStr;
-        return true;
+    	if(!UsbDescriptor::init(2 + sizeof(InterfaceDescriptorFields),
+    							UsbDescType_Interface))
+    		return false;
+    	_totalLength = 2 + sizeof(InterfaceDescriptorFields);
+    	fields()->bInterfaceNumber = ifaceNumber;
+    	fields()->bAlternateSetting = altSetting;
+    	fields()->bNumEndpoints = 0;
+    	fields()->bInterfaceClass = ifaceClass;
+    	fields()->bInterfaceSubClass = ifaceSubClass;
+    	fields()->bInterfaceProtocol = protocol;
+    	fields()->iInterface = ifaceStr.idx();
+    	return true;
     }
 
     inline UsbClassSpecificDescriptor beginCSDescriptor() const
@@ -390,7 +447,7 @@ public:
         return true;
     }
 
-    inline UsbEPDescriptor beginEPDescriptor() const
+    inline UsbEPDescriptor beginEP() const
     {
         if(_totalLength >= size())
             return UsbEPDescriptor(nullptr, 0);
@@ -398,7 +455,7 @@ public:
                                size() - _totalLength);
     }
 
-    inline bool endEPDescriptor(const UsbEPDescriptor & ep)
+    inline bool endEP(UsbEPDescriptor & ep)
     {
         if(!ep.isValid())
             return false;
@@ -407,6 +464,12 @@ public:
             return false;
         _totalLength = new_length;
         ++fields()->bNumEndpoints;
+
+        if(ep.bEndpointAddress() & 0x80)
+        	_inEps[ep.bEndpointAddress() & 0x0F] = &ep;
+        else
+        	_outEps[ep.bEndpointAddress() & 0x0F] = &ep;
+
         return true;
     }
 
@@ -425,6 +488,10 @@ public:
     inline uint8_t	iInterface() const { return fields()->iInterface; }
 
     inline uint16_t totalLength() const { return _totalLength; }
+
+    inline UsbEPDescriptor * getInEndpoint(uint8_t idx) const { return _inEps[idx]; }
+
+    inline UsbEPDescriptor * getOutEndpoint(uint8_t idx) const { return _outEps[idx]; }
 
 private:
     typedef struct __packed
@@ -445,7 +512,9 @@ private:
     }
     InterfaceDescriptorFields;
 
-    uint16_t  _totalLength;
+    uint16_t  			_totalLength;
+    UsbEPDescriptor	* 	_inEps[MaxEndpoints];
+    UsbEPDescriptor	* 	_outEps[MaxEndpoints];
 
     inline InterfaceDescriptorFields * fields() const { return reinterpret_cast<InterfaceDescriptorFields*>(restFields()); }
 };
@@ -456,12 +525,12 @@ class UsbConfigDescriptor :
         public UsbDescriptor
 {
 public:
-	UsbConfigDescriptor() :
-		UsbDescriptor(nullptr, 0)
+	UsbConfigDescriptor(uint8_t * data, Length_t length) :
+		UsbDescriptor(data, length)
 	{}
 
     inline bool init(uint8_t configValue,
-                     uint8_t configStr,
+    				 const UsbStringDescriptor & configStr,
                      uint8_t attributes,
                      uint8_t maxPower)
     {
@@ -471,11 +540,23 @@ public:
         fields()->wTotalLength = 2 + sizeof(ConfDescriptorFields);
         fields()->bNumInterfaces = 0;
         fields()->bConfigurationValue = configValue;
-        fields()->iConfiguration = configStr;
+        fields()->iConfiguration = configStr.idx();
         fields()->bmAttributes = attributes;
         fields()->bMaxPower = maxPower;
         return true;
     }
+
+    inline uint16_t	wTotalLength() const { return fields()->wTotalLength; }
+
+    inline uint8_t	bNumInterfaces() const { return fields()->bNumInterfaces; }
+
+    inline uint8_t	bConfigurationValue() const { return fields()->bConfigurationValue; }
+
+    inline uint8_t	iConfiguration() const { return fields()->iConfiguration; }
+
+    inline uint8_t	bmAttributes() const { return fields()->bmAttributes; }
+
+    inline uint8_t	bMaxPower() const { return fields()->bMaxPower; }
 
     inline UsbInterfaceDescriptor beginInterface() const
     {
@@ -498,18 +579,6 @@ public:
         return true;
     }
 
-    inline uint16_t	wTotalLength() const { return fields()->wTotalLength; }
-
-    inline uint8_t	bNumInterfaces() const { return fields()->bNumInterfaces; }
-
-    inline uint8_t	bConfigurationValue() const { return fields()->bConfigurationValue; }
-
-    inline uint8_t	iConfiguration() const { return fields()->iConfiguration; }
-
-    inline uint8_t	bmAttributes() const { return fields()->bmAttributes; }
-
-    inline uint8_t	bMaxPower() const { return fields()->bMaxPower; }
-
 private:
     typedef struct __packed
     {
@@ -531,26 +600,6 @@ private:
     ConfDescriptorFields;
 
     inline ConfDescriptorFields * fields() const { return reinterpret_cast<ConfDescriptorFields*>(restFields()); }
-};
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-class __packed UsbStringDescriptor :
-        public UsbDescriptor
-{
-public:
-	UsbStringDescriptor() :
-		UsbDescriptor(nullptr, 0)
-	{}
-
-    inline bool init(const char * str)
-    {
-        uint8_t len = uint8_t(strlen(str));
-        if(!UsbDescriptor::init(2 + len, UsbDescType_String))
-            return false;
-        memcpy(restFields(), str, len);
-        return true;
-    }
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -21,6 +21,8 @@ public:
         _size(other._size)
     {}
 
+    virtual ~ArrayRef() {}
+
     inline Length_t size() const { return _size; }
 
     inline void copyTo(T * target) const

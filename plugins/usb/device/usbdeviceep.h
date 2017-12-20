@@ -38,7 +38,7 @@ public:
 
     inline uint8_t epAddr() const { return _addr; }
 
-    inline EndpDesc getDescriptor() const
+    inline EndpDesc getUsbDescriptor() const
     {
         EndpDesc desc;
         desc.setByte(EndpDesc::bEndpointAddress, _addr);

@@ -12,7 +12,8 @@ class OStreamNode :
 public:
     OStreamNode(const char * name,
                 NodeType_t type,
-                Device * dev);
+                Device * dev,
+				uint16_t maxPacketSize);
 
     bool addChannel(OStreamChannel * channel);
 
@@ -27,16 +28,14 @@ protected:
 
     virtual bool nodeDataReceived(const ControlPacket & packet) override;
 
-    virtual bool init() override;
-
     virtual void streamToggled(bool enabled) = 0;
 
 private:
+    bool toggleStream(bool enabled);
+
     BOOL_PROP(Enabled, false,
               [this]() { return _enabled; },
               [this](bool enabled) { return toggleStream(enabled); })
-
-    bool toggleStream(bool enabled);
 
     bool 	_enabled;
     Length_t _packetSize;

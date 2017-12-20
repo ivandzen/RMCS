@@ -17,9 +17,17 @@
 #define ISOUSB_BASE_CONFIG              1
 #define ISOUSB_BASE_INTERFACE           0
 
+#ifdef ENABLE_USBDEV
+
 #define EP_ATTRIBUTES (UsbDevice::EP_ISOC | \
                        UsbDevice::SYNC_MODE_NONE | \
                        UsbDevice::USAGE_MODE_DATA)
+
+#endif
+
+#define USBISTREAM_EP_ATTRIBUTES (UsbEPDescriptor::EP_ISOC | \
+                       	   	   	  UsbEPDescriptor::SYNC_MODE_NONE | \
+								  UsbEPDescriptor::USAGE_MODE_DATA)
 
 #define NODE_TYPE_USBISTREAM 45
 #define NODE_TYPE_USBOSTREAM 46
