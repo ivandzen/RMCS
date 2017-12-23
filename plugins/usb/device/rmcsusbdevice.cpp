@@ -222,7 +222,7 @@ void RMCSUsbDevice::onDeviceStarted()
     	iface.addEndpoint(isoinep);
     }
 
-    _configDesc.setByte(ConfigDesc::bConfigurationValue, ISOUSB_BASE_CONFIG);
+	_configDesc.setByte(ConfigDesc::bConfigurationValue, ISOUSB_BASE_CONFIG);
     _configDesc.setByte(ConfigDesc::iConfiguration, 0x00);
     _configDesc.setByte(ConfigDesc::bmAttributes, 0xC0);
     _configDesc.setByte(ConfigDesc::bMaxPower, 0x32);

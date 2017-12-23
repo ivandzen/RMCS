@@ -662,8 +662,8 @@ UsbDevice::Status UsbDevice::stdEPReq(UsbDevice::SetupRequest *req) {
 
 void UsbDevice::getDescriptor(UsbDevice::SetupRequest *req)
 {
-    uint16_t len;
-    uint8_t *pbuf;
+    uint16_t len = 0;
+    uint8_t *pbuf = nullptr;
 
     switch (req->wValue >> 8)
     {

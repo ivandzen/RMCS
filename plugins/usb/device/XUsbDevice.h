@@ -21,12 +21,7 @@ class XUsbEndpoint :
 {
 public:
 	XUsbEndpoint(const UsbEPDescriptor & descriptor,
-				 XUsbIface * iface) :
-		UsbEPDescriptor(descriptor),
-		_handle(nullptr),
-		_status(0),
-		_iface(iface)
-	{}
+				 XUsbIface * iface);
 
 	virtual ~XUsbEndpoint() {}
 
@@ -82,7 +77,7 @@ public:
 
 	inline void transmit(uint8_t * pbuf, uint16_t size)
 	{
-		HAL_XUsbDevice_Transmit(handle(), bEndpointAddress(), pbuf, size);
+		HAL_XUsbDevice_Transmit(handle(), bEndpointAddress() & 0x07, pbuf, size);
 	}
 };
 
@@ -100,7 +95,7 @@ public:
 
 	inline void receive(uint8_t * pbuf, uint16_t size)
 	{
-		HAL_XUsbDevice_Receive(handle(), bEndpointAddress(), pbuf, size);
+		HAL_XUsbDevice_Receive(handle(), bEndpointAddress() & 0x07, pbuf, size);
 	}
 };
 
@@ -283,13 +278,9 @@ public:
 
     inline void * handle() const { return _handle; }
 
-    inline void setConfig(uint8_t idx, XUsbConfiguration * config)
-    {
-    	assert(idx < USB_MAX_CONFIGS);
-    	_configs[idx] = config;
-    }
-
     UsbStringDescriptor createStr(const char * str);
+
+    void addConfig(XUsbConfiguration * config);
 
 protected:
 	virtual void runTestMode() {}
@@ -335,13 +326,13 @@ private:
 
     inline void	setInEndpoint(uint8_t epnum, XUsbInEndpoint * ep)
     {
-    	assert(epnum < USB_MAX_ENDPOINTS);
+    	assert(epnum < UsbInterfaceDescriptor::MaxEndpoints);
     	_inEndpoints[epnum] = ep;
     }
 
     inline void setOutEndpoint(uint8_t epnum, XUsbOutEndpoint * ep)
     {
-    	assert(epnum < USB_MAX_ENDPOINTS);
+    	assert(epnum < UsbInterfaceDescriptor::MaxEndpoints);
     	_outEndpoints[epnum] = ep;
     }
 
@@ -369,8 +360,8 @@ private:
     uint8_t				_dev_config;
     UsbStringDescriptor	_strings[USB_MAX_STRINGS];
     XUsbConfiguration *	_configs[USB_MAX_CONFIGS];
-    XUsbInEndpoint *	_inEndpoints[USB_MAX_ENDPOINTS];
-    XUsbOutEndpoint *	_outEndpoints[USB_MAX_ENDPOINTS];
+    XUsbInEndpoint *	_inEndpoints[UsbInterfaceDescriptor::MaxEndpoints];
+    XUsbOutEndpoint *	_outEndpoints[UsbInterfaceDescriptor::MaxEndpoints];
     uint8_t				_devDescData[UsbDeviceDescriptor::SIZE];
 };
 
@@ -391,10 +382,10 @@ public:
 
 	virtual void ep0TxSent(UsbSetupRequest * req) = 0;
 
-	inline void init(XUsbDevice * dev)
+	void build(XUsbDevice * dev)
 	{
 		_device = dev;
-		for(int epnum = 0; epnum < USB_MAX_ENDPOINTS; ++epnum)
+		for(int epnum = 1; epnum < UsbInterfaceDescriptor::MaxEndpoints; ++epnum)
 		{
 			XUsbInEndpoint * inep = static_cast<XUsbInEndpoint*>(getInEndpoint(epnum));
 			XUsbOutEndpoint * outep = static_cast<XUsbOutEndpoint*>(getOutEndpoint(epnum));
@@ -410,11 +401,43 @@ public:
 		}
 	}
 
+	/*
+	inline void init(XUsbDevice * dev,
+					 uint8_t ifaceNumber,
+			         uint8_t altSetting,
+					 uint8_t ifaceClass,
+					 uint8_t ifaceSubClass,
+					 uint8_t protocol,
+					 const UsbStringDescriptor & ifaceStr)
+	{
+		_device = dev;
+		for(int epnum = 1; epnum < UsbInterfaceDescriptor::MaxEndpoints; ++epnum)
+		{
+			XUsbInEndpoint * inep = static_cast<XUsbInEndpoint*>(getInEndpoint(epnum));
+			XUsbOutEndpoint * outep = static_cast<XUsbOutEndpoint*>(getOutEndpoint(epnum));
+
+			if(inep != nullptr)
+				inep->setHandle(dev->handle());
+
+			if(outep != nullptr)
+				outep->setHandle(dev->handle());
+
+			_device->setInEndpoint(epnum, static_cast<XUsbInEndpoint*>(getInEndpoint(epnum)));
+			_device->setOutEndpoint(epnum, static_cast<XUsbOutEndpoint*>(getOutEndpoint(epnum)));
+		}
+		UsbInterfaceDescriptor::init(ifaceNumber, altSetting, ifaceClass,
+									 ifaceSubClass, protocol, ifaceStr);
+	}
+	*/
+
 	inline bool isInitialized() const { return _device != nullptr; }
 
 	inline void release() { _device = nullptr; }
 
-	inline XUsbEndpoint beginEP() { return XUsbEndpoint(UsbInterfaceDescriptor::beginEP(), this); }
+	inline XUsbEndpoint beginEP()
+	{
+		return XUsbEndpoint(UsbInterfaceDescriptor::beginEP(), this);
+	}
 
 	inline bool endEP(XUsbEndpoint & ep) { return UsbInterfaceDescriptor::endEP(ep); }
 
@@ -464,10 +487,12 @@ public:
 	inline bool initIface(uint8_t idx, XUsbDevice * device) const
 	{
 		if((idx < USB_MAX_IFACES) && (_interfaces[idx] != nullptr))
-			return false;
+		{
+			_interfaces[idx]->build(device);
+			return true;
+		}
 
-		_interfaces[idx]->init(device);
-		return true;
+		return false;
 	}
 
 	inline bool initDefaultIface(XUsbDevice * device) const
@@ -493,6 +518,16 @@ public:
 	inline void ep0TxSent(UsbSetupRequest * req)
 	{
 		_interfaces[_iface]->ep0TxSent(req);
+	}
+
+	inline bool endInterface(XUsbIface & iface)
+	{
+		uint8_t ifaceNum = iface.bInterfaceNumber();
+		if((ifaceNum > USB_MAX_INTERFACES) ||
+			(_interfaces[ifaceNum] != nullptr))
+			return false;
+		_interfaces[ifaceNum] = &iface;
+		return UsbConfigDescriptor::endInterface(iface);
 	}
 
 private:

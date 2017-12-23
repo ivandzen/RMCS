@@ -19,7 +19,7 @@ RMCSUsbIStreamEP::RMCSUsbIStreamEP(const XUsbEndpoint & source,
 		XUsbOutEndpoint(source),
 		_inPacketCounter(0)
 {
-	XUsbOutEndpoint::init(UsbEPDescriptor::DEFAULT_LENGTH, epnum, USBISTREAM_EP_ATTRIBUTES, mps, 0);
+	XUsbOutEndpoint::init(UsbEPDescriptor::DEFAULT_LENGTH, 0x80 | epnum, USBISTREAM_EP_ATTRIBUTES, mps, 1);
 }
 
 bool RMCSUsbIStreamEP::settingsRequested(ControlPacket & packet) const

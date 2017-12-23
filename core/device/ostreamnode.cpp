@@ -6,7 +6,8 @@ OStreamNode::OStreamNode(const char * name,
                          Device * dev,
 						 uint16_t maxPacketSize) :
     Node(type, name, dev),
-    _packetSize(0)
+    _packetSize(0),
+	_enabled(false)
 {
 	_buffer.resize(maxPacketSize);
 }

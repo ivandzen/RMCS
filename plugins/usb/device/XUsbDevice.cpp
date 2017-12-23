@@ -15,6 +15,13 @@
 #define  SWAPBYTE(addr)        (((uint16_t)(*((uint8_t *)(addr)))) + \
                                (((uint16_t)(*(((uint8_t *)(addr)) + 1))) << 8))
 
+XUsbEndpoint::XUsbEndpoint(const UsbEPDescriptor & descriptor,
+				 	 	   XUsbIface * iface) :
+		UsbEPDescriptor(descriptor),
+		_status(0),
+		_iface(iface)
+{}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 
 void XUsbEndpoint::reportStatus(XUsbZeroEndpoint * ep0)
@@ -136,10 +143,19 @@ XUsbDevice::XUsbDevice(void * handle) :
 		_dev_address(0),
 	    _dev_config_status(0),
 	    _dev_remote_wakeup(0),
-	    _dev_config(0)
+	    _dev_config(1)
 {
 	_inEndpoints[0] = this;
 	_outEndpoints[0] = this;
+
+	for(int i = 0; i < USB_MAX_CONFIGS; ++i)
+		_configs[i] = nullptr;
+
+	static uint8_t strDesc0[4];
+	static const uint16_t LANGID = 0x0409;
+	_strings[0] = UsbStringDescriptor(0, strDesc0, 4);
+	_strings[0].init(&LANGID, 1);
+	int i = 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -312,6 +328,8 @@ void  XUsbDevice::stdItfReq(UsbSetupRequest * req)
 
         if((req->wLength == 0) && ret)
         	ctlSendStatus();
+
+        break;
     }
 
     default:
@@ -403,8 +421,8 @@ void XUsbDevice::ep0TxSent(UsbSetupRequest * req)
 
 void XUsbDevice::getDescriptor(UsbSetupRequest *req)
 {
-    uint16_t len;
-    uint8_t *pbuf;
+    uint16_t len = 0;
+    uint8_t * pbuf = nullptr;
 
     switch (req->wValue >> 8)
     {
@@ -427,12 +445,6 @@ void XUsbDevice::getDescriptor(UsbSetupRequest *req)
     		pbuf = config->data();
     		len = config->wTotalLength();
     	}
-    	else
-    	{
-    		pbuf = nullptr;
-    		len = 0;
-    	}
-
         break;
 
     }
@@ -652,13 +664,18 @@ void XUsbDevice::clrFeature(UsbSetupRequest * req)
     }
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
 UsbStringDescriptor XUsbDevice::createStr(const char * str)
 {
 	size_t len = strlen(str);
 	for(int i = 0; i < USB_MAX_STRINGS; ++i)
 		if(!_strings[i].isValid())
 		{
-			UsbStringDescriptor desc(i, new uint8_t[2 + len], 2 + len);
+			//! Аллоцируется новый буфер под дескриптор строки
+			//! Его длина равна длине стандартного заголовка usb(2 байта) +
+			//! длина строки в символах * 2 (кодировка в юникоде)
+			UsbStringDescriptor desc(i, new uint8_t[2 + len * 2], 2 + len * 2);
 			if(!desc.init(str))
 			{
 				delete[] desc.data();
@@ -669,5 +686,14 @@ UsbStringDescriptor XUsbDevice::createStr(const char * str)
 			return _strings[i];
 		}
 	return UsbStringDescriptor();
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+void XUsbDevice::addConfig(XUsbConfiguration * config)
+{
+	uint8_t idx = config->bConfigurationValue();
+	assert((idx < USB_MAX_CONFIGS) && (_configs[idx] == nullptr));
+	_configs[idx] = config;
 }
 

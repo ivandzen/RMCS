@@ -25,7 +25,9 @@ public:
 
 	virtual ~RMCSUsbIface();
 
-	bool init(uint8_t number, uint8_t altSetting, const UsbStringDescriptor & ifaceStr);
+	bool init(uint8_t number,
+			  uint8_t altSetting,
+			  const UsbStringDescriptor & ifaceStr);
 
 protected:
 	virtual bool setupRequest(UsbSetupRequest * req) override;

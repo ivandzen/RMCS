@@ -385,7 +385,8 @@ class __packed UsbStringDescriptor :
 {
 public:
 	UsbStringDescriptor() :
-		UsbDescriptor(nullptr, 0)
+		UsbDescriptor(nullptr, 0),
+		_idx(0xFF)
 	{}
 
 	UsbStringDescriptor(uint8_t idx,
@@ -395,13 +396,33 @@ public:
 			_idx(idx)
 	{}
 
+	inline bool init(const uint16_t * langIDs, uint8_t count)
+	{
+	    if(!UsbDescriptor::init(2 + count * 2, UsbDescType_String))
+	        return false;
+	    memset(restFields(), 0, count * 2);
+	    for(int i = 0; i < count; ++i)
+	    {
+	    	restFields()[i * 2] = langIDs[i] & 0x00FF;
+	    	restFields()[i * 2 + 1] = (langIDs[i] & 0xFF00) >> 8;
+	    }
+	    return true;
+	}
+
     inline bool init(const char * str)
     {
         uint8_t len = uint8_t(strlen(str));
-        if(!UsbDescriptor::init(2 + len, UsbDescType_String))
+        if(!UsbDescriptor::init(2 + len * 2, UsbDescType_String))
             return false;
-        memcpy(restFields(), str, len);
+        memset(restFields(), 0, len * 2);
+        for(int i = 0; i < len; ++i)
+        	restFields()[i * 2] = str[i];
         return true;
+    }
+
+    inline bool isValid() const
+    {
+    	return UsbDescriptor::isValid() && (_idx != 0xFF);
     }
 
     inline uint8_t idx() const { return _idx; }
@@ -424,7 +445,10 @@ public:
     UsbInterfaceDescriptor(uint8_t * data, Length_t length) :
         UsbDescriptor (data, length),
         _totalLength(0)
-    {}
+    {
+    	memset(_inEps, 0, MaxEndpoints * sizeof(UsbEPDescriptor*));
+    	memset(_outEps, 0, MaxEndpoints * sizeof(UsbEPDescriptor*));
+    }
 
     inline bool init(uint8_t ifaceNumber,
                      uint8_t altSetting,

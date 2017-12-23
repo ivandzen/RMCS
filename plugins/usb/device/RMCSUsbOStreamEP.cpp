@@ -17,7 +17,7 @@ RMCSUsbOStreamEP::RMCSUsbOStreamEP(const XUsbEndpoint & source,
 					static_cast<RMCSUsbIface*>(source.iface()), mps),
 		XUsbInEndpoint(source)
 {
-	XUsbInEndpoint::init(UsbEPDescriptor::DEFAULT_LENGTH, epnum, USBISTREAM_EP_ATTRIBUTES, mps, 0);
+	XUsbInEndpoint::init(UsbEPDescriptor::DEFAULT_LENGTH, epnum, USBISTREAM_EP_ATTRIBUTES, mps, 1);
 }
 
 bool RMCSUsbOStreamEP::settingsRequested(ControlPacket & packet) const

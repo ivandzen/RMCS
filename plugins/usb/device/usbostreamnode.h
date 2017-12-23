@@ -1,5 +1,8 @@
 #ifndef USBOSTREAMNODE_H
 #define USBOSTREAMNODE_H
+
+#ifdef ENABLE_USBDEVICE
+
 #include <core/device/ostreamnode.h>
 #include <plugins/usb/device/usbdeviceep.h>
 
@@ -31,5 +34,6 @@ private:
     std::vector<Data> _buffer;
 };
 
+#endif
 
 #endif //USBOSTREAMNODE_H

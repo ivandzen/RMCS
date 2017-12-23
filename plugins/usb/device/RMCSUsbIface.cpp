@@ -26,10 +26,12 @@ RMCSUsbIface::~RMCSUsbIface()
 	// TODO Auto-generated destructor stub
 }
 
-bool RMCSUsbIface::init(uint8_t number, uint8_t altSetting,
+bool RMCSUsbIface::init(uint8_t number,
+						uint8_t altSetting,
 						const UsbStringDescriptor & ifaceStr)
 {
-	return UsbInterfaceDescriptor::init(number, altSetting, 0xFF, RMCS_USB_DEVICE_CLASS, 0, ifaceStr);
+	return XUsbIface::init(number, altSetting, 0xFF,
+						   RMCS_USB_DEVICE_CLASS, 0, ifaceStr);
 }
 
 bool RMCSUsbIface::setupRequest(UsbSetupRequest * req)

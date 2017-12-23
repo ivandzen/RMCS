@@ -12,7 +12,6 @@
 #define USB_MAX_EP0_SIZE 	64
 #define USB_MAX_CONFIGS		2
 #define USB_MAX_STRINGS		16
-#define USB_MAX_ENDPOINTS	6
 #define USB_MAX_INTERFACES 	4
 
 #define HAL_XUsbDevice_SetAddress(handle, addr) \
