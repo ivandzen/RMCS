@@ -37,7 +37,7 @@ void RMCSUsbIStreamEP::streamToggled(bool enabled)
     }
 }
 
-bool RMCSUsbIStreamEP::epDataOut(uint8_t * pdata)
+bool RMCSUsbIStreamEP::epDataOut(uint8_t *)
 {
 	    uint8_t ready_index = _inPacketCounter;
 	    _inPacketCounter++;

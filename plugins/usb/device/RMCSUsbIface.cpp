@@ -62,7 +62,7 @@ void RMCSUsbIface::ep0RxReady(UsbSetupRequest * req)
 						  ControlPacket(_setupDataBuffer, req->wLength));
 }
 
-void RMCSUsbIface::ep0TxSent(UsbSetupRequest * req)
+void RMCSUsbIface::ep0TxSent(UsbSetupRequest *)
 {
 	//! DO NOTHING!
 }

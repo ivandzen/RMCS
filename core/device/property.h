@@ -85,6 +85,8 @@ public:
         _default(default_value)
     {}
 
+    virtual ~RWProperty() {}
+
 protected:
     virtual bool nodeDataReceived(const ControlPacket & packet) override
     {

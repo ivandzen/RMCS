@@ -18,6 +18,7 @@
 XUsbEndpoint::XUsbEndpoint(const UsbEPDescriptor & descriptor,
 				 	 	   XUsbIface * iface) :
 		UsbEPDescriptor(descriptor),
+		_handle(nullptr),
 		_status(0),
 		_iface(iface)
 {}
@@ -222,19 +223,21 @@ void  XUsbDevice::resume()
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-void  XUsbDevice::isoOutIncomplete(uint8_t epnum)
+void  XUsbDevice::isoOutIncomplete(uint8_t)
 {
+	//! @todo
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-void XUsbDevice::isoInIncomplete(uint8_t epnum)
+void XUsbDevice::isoInIncomplete(uint8_t)
 {
+	//! @todo
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-void XUsbDevice::reset(Speed speed)
+void XUsbDevice::reset(Speed)
 {
     /* Open EP0 OUT */
 	_inEndpoints[0]->open();
@@ -601,7 +604,7 @@ void XUsbDevice::getConfig(UsbSetupRequest *req)
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-void XUsbDevice::getStatus(UsbSetupRequest *req)
+void XUsbDevice::getStatus(UsbSetupRequest *)
 {
     switch (_dev_state)
     {

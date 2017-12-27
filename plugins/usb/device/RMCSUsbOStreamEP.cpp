@@ -32,7 +32,7 @@ void RMCSUsbOStreamEP::streamToggled(bool enabled)
         transmit(ostreamPacket(), packetSize());
 }
 
-bool RMCSUsbOStreamEP::epDataIn(uint8_t * pdata)
+bool RMCSUsbOStreamEP::epDataIn(uint8_t *)
 {
     if(!isStreamEnabled())
         return true;

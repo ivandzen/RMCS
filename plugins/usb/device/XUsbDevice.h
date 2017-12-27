@@ -26,7 +26,7 @@ public:
 
 	virtual ~XUsbEndpoint() {}
 
-	virtual bool setupRequest(UsbSetupRequest * req) { return false; }
+	virtual bool setupRequest(UsbSetupRequest *) { return false; }
 
 	inline void open()
 	{
