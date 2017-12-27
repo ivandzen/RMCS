@@ -8,6 +8,7 @@
 #ifndef XUSBDEVICE_H_
 #define XUSBDEVICE_H_
 
+#include <plugins/usb/common/common.h>
 #include <plugins/usb/common/usbdescriptors.h>
 #include "XUsbDevice_Config.h"
 
@@ -232,7 +233,14 @@ public:
     }
     Speed;
 
-	explicit XUsbDevice(void * handle);
+    enum DevConfig
+	{
+        CONFIG_REMOTE_WAKEUP    = 0x0002,
+        CONFIG_SELF_POWERED     = 0x0001
+    };
+
+
+	explicit XUsbDevice(void * handle, bool selfPowered);
 
 	bool init(uint16_t bcd,
               uint8_t deviceClass,
@@ -285,18 +293,6 @@ public:
 protected:
 	virtual void runTestMode() {}
 
-	//virtual void SOFEvent() {}
-
-	//virtual void suspendEvent() {}
-
-	//virtual void resumeEvent() {}
-
-	//virtual void isoOutIncompleteEvent(uint8_t epnum) {}
-
-	//virtual void isoInIncompleteEvent(uint8_t epnum) {}
-
-	//virtual void resetEvent() {}
-
 private:
 	virtual bool isDeviceConfigured() const final override { return _dev_state == DEV_CONFIGURED; }
 
@@ -327,13 +323,31 @@ private:
     inline void	setInEndpoint(uint8_t epnum, XUsbInEndpoint * ep)
     {
     	assert(epnum < UsbInterfaceDescriptor::MaxEndpoints);
+
+    	if(_inEndpoints[epnum] != nullptr)
+    		_inEndpoints[epnum]->close();
+
     	_inEndpoints[epnum] = ep;
+    	if(ep != nullptr)
+    	{
+    		ep->setHandle(_handle);
+    		ep->open();
+    	}
     }
 
     inline void setOutEndpoint(uint8_t epnum, XUsbOutEndpoint * ep)
     {
     	assert(epnum < UsbInterfaceDescriptor::MaxEndpoints);
+
+    	if(_outEndpoints[epnum] != nullptr)
+    		_outEndpoints[epnum]->close();
+
     	_outEndpoints[epnum] = ep;
+    	if(ep != nullptr)
+    	{
+    		ep->setHandle(_handle);
+    		ep->open();
+    	}
     }
 
     enum DeviceState
@@ -342,12 +356,6 @@ private:
         DEV_ADDRESSED,
         DEV_CONFIGURED,
         DEV_SUSPENDED
-    };
-
-    enum DevConfig
-	{
-        CONFIG_REMOTE_WAKEUP    = 2,
-        CONFIG_SELF_POWERED     = 1
     };
 
     void *				_handle;
@@ -387,48 +395,10 @@ public:
 		_device = dev;
 		for(int epnum = 1; epnum < UsbInterfaceDescriptor::MaxEndpoints; ++epnum)
 		{
-			XUsbInEndpoint * inep = static_cast<XUsbInEndpoint*>(getInEndpoint(epnum));
-			XUsbOutEndpoint * outep = static_cast<XUsbOutEndpoint*>(getOutEndpoint(epnum));
-
-			if(inep != nullptr)
-				inep->setHandle(dev->handle());
-
-			if(outep != nullptr)
-				outep->setHandle(dev->handle());
-
 			_device->setInEndpoint(epnum, static_cast<XUsbInEndpoint*>(getInEndpoint(epnum)));
 			_device->setOutEndpoint(epnum, static_cast<XUsbOutEndpoint*>(getOutEndpoint(epnum)));
 		}
 	}
-
-	/*
-	inline void init(XUsbDevice * dev,
-					 uint8_t ifaceNumber,
-			         uint8_t altSetting,
-					 uint8_t ifaceClass,
-					 uint8_t ifaceSubClass,
-					 uint8_t protocol,
-					 const UsbStringDescriptor & ifaceStr)
-	{
-		_device = dev;
-		for(int epnum = 1; epnum < UsbInterfaceDescriptor::MaxEndpoints; ++epnum)
-		{
-			XUsbInEndpoint * inep = static_cast<XUsbInEndpoint*>(getInEndpoint(epnum));
-			XUsbOutEndpoint * outep = static_cast<XUsbOutEndpoint*>(getOutEndpoint(epnum));
-
-			if(inep != nullptr)
-				inep->setHandle(dev->handle());
-
-			if(outep != nullptr)
-				outep->setHandle(dev->handle());
-
-			_device->setInEndpoint(epnum, static_cast<XUsbInEndpoint*>(getInEndpoint(epnum)));
-			_device->setOutEndpoint(epnum, static_cast<XUsbOutEndpoint*>(getOutEndpoint(epnum)));
-		}
-		UsbInterfaceDescriptor::init(ifaceNumber, altSetting, ifaceClass,
-									 ifaceSubClass, protocol, ifaceStr);
-	}
-	*/
 
 	inline bool isInitialized() const { return _device != nullptr; }
 

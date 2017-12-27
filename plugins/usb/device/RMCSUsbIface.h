@@ -11,7 +11,6 @@
 #include <plugins/usb/device/XUsbDevice.h>
 #include <core/device/device.h>
 
-#define MAX_SETUP_DATA_LENGTH 4096
 
 class RMCSUsbIStreamEP;
 class RMCSUsbOStreamEP;

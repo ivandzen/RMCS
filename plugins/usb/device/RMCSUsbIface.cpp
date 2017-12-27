@@ -37,17 +37,17 @@ bool RMCSUsbIface::init(uint8_t number,
 bool RMCSUsbIface::setupRequest(UsbSetupRequest * req)
 {
     if((req->bmRequest & 0x80) == 0)
-    //! CONTROL OUT
     {
+    	//! CONTROL OUT
         _setupRequest = req;
         if(req->wLength > 0)
             ep0Receive(_setupDataBuffer, req->wLength);
         else
             controlPacketReceived(req->wValue, req->bRequest, ControlPacket(0, 0));
     }
-    //! CONTROL IN
     else
     {
+    	//! CONTROL IN
         ControlPacket packet(_setupDataBuffer, MAX_SETUP_DATA_LENGTH);
         if(controlPacketRequested(req->wValue, req->bRequest, packet))
             ep0Transmit(packet.data(), packet.packetSize());
@@ -59,7 +59,7 @@ bool RMCSUsbIface::setupRequest(UsbSetupRequest * req)
 void RMCSUsbIface::ep0RxReady(UsbSetupRequest * req)
 {
 	controlPacketReceived(req->wValue, req->bRequest,
-						  ControlPacket(_setupDataBuffer, MAX_SETUP_DATA_LENGTH));
+						  ControlPacket(_setupDataBuffer, req->wLength));
 }
 
 void RMCSUsbIface::ep0TxSent(UsbSetupRequest * req)

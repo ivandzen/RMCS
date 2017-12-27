@@ -26,9 +26,11 @@ public:
 
     inline Length_t dataLength() const { return _length; }
 
+    inline Data * streamPtr() const { return _ostream->ostreamPacket() + _offset; }
+
     inline void write(Data * data)
     {
-        memcpy(_ostream->ostreamPacket() + _offset, data, _length);
+        memcpy(streamPtr(), data, _length);
     }
 
 protected:

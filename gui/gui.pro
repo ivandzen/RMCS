@@ -6,6 +6,12 @@ TEMPLATE = lib
 
 QT += core network widgets qml
 
+CONFIG += c++11
+
+TARGET = rmcs_gui
+
+DESTDIR = $$BUILD_PREFIX/lib
+
 FORMS += \
     connfactoriesform.ui \
     qboolropropertyform.ui \

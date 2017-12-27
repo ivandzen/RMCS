@@ -20,7 +20,7 @@ Node::Node(NodeType_t type,
 
 Node::Node(NodeType_t type,
            const char *name,
-           Device *device) :
+           Device * device) :
     _id(NodeIDNull),
     _type(type),
     _name(name),

@@ -15,6 +15,12 @@ public slots:
         return static_cast<QOParamController*>(node);
     }
 
+    QOParamController * new_QOParamController(QOStreamChannelController * channel) {
+        if(!isOParamType(channel->type()))
+            return nullptr;
+        return static_cast<QOParamController*>(channel);
+    }
+
     QVariant getValue(QOParamController * node) {
         return node->getValue();
     }

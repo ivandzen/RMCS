@@ -25,13 +25,13 @@ public:
     ControlPacket(Data * data, Length_t size) :
         ArrayRef<Data> (data, size)
     {
-        header()->payloadLength = 0;
+        //header()->payloadLength = 0;
     }
 
     explicit ControlPacket(const ArrayRef<Data> & other) :
         ArrayRef<Data> (other)
     {
-        header()->payloadLength = 0;
+        //header()->payloadLength = 0;
     }
 
     ControlPacket(const ControlPacket & other) :
@@ -66,6 +66,7 @@ public:
 private:
     inline Header * header() const { return reinterpret_cast<Header*>(data()); }
 
+    /*
     inline uint8_t createSA(uint8_t sa_len)
     {
         if(payloadLength() + sa_len > size())
@@ -73,6 +74,7 @@ private:
         header()->payloadLength += sa_len;
         return sa_len;
     }
+    */
 };
 
 ///////////////////////////////////////////////////////////////////////////////////

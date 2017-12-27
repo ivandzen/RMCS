@@ -43,7 +43,7 @@ protected:
     virtual void streamToggled(bool enabled) = 0;
 
 private:
-    BOOL_PROP(Enabled, false,
+    BOOL_PROP(Enabled, this, false,
               [this]() { return _enabled; },
               [this](bool enabled) { return toggleStream(enabled); })
 

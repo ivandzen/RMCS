@@ -19,7 +19,7 @@ public:
 
     inline bool isStreamEnabled() const { return _enabled; }
 
-    inline Length_t packetSize() const { return _packetSize; }
+    inline Length_t packetSize() const { return _buffer.size(); }
 
     inline Data * ostreamPacket() { return _buffer.data(); }
 
@@ -33,7 +33,7 @@ protected:
 private:
     bool toggleStream(bool enabled);
 
-    BOOL_PROP(Enabled, false,
+    BOOL_PROP(Enabled, this, false,
               [this]() { return _enabled; },
               [this](bool enabled) { return toggleStream(enabled); })
 

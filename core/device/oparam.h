@@ -31,6 +31,7 @@ public:
     {
         ++_lastData.id;
         _lastData.value = value;
+        //*(ParamData<T> *)OStreamChannel::streamPtr() = _lastData;
         OStreamChannel::write(reinterpret_cast<Data*>(&_lastData));
     }
 

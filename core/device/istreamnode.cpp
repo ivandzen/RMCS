@@ -12,14 +12,14 @@ IStreamNode::IStreamNode(const char * name,
 	_numPackets(num_packets),
     _packetSize(0)
 {
-	_buffer.resize(_numPackets * _packetSize);
+	_buffer.resize(_numPackets * maxPacketSize);
 }
 
 bool IStreamNode::addChannel(IStreamChannel * channel)
 {
     if(nodeStatus() != NODE_STAT_UNDEFINED)
         return false;
-    assert(_packetSize + channel->dataLength() < _buffer.size());
+    assert(_packetSize + channel->dataLength() <= _buffer.size());
     channel->_offset = _packetSize;
     _packetSize += channel->dataLength();
     _channels.push_back(channel);

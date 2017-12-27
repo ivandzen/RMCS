@@ -134,17 +134,23 @@ bool XUsbZeroEndpoint::epDataIn(uint8_t * pdata)
 
 #define MAX_PACKET 64
 
-XUsbDevice::XUsbDevice(void * handle) :
+XUsbDevice::XUsbDevice(void * handle, bool selfPowered) :
 		XUsbZeroEndpoint(handle, MAX_PACKET),
 		_handle(handle),
 		_dev_test_mode(false),
 		_dev_old_state(DEV_DEFAULT),
 		_dev_state(DEV_DEFAULT),
 		_dev_address(0),
-	    _dev_config_status(0),
+	    _dev_config_status(selfPowered),
 	    _dev_remote_wakeup(0),
 	    _dev_config(1)
 {
+	for(int i = 0; i < UsbInterfaceDescriptor::MaxEndpoints; ++i)
+	{
+		_inEndpoints[i] = nullptr;
+		_outEndpoints[i] = nullptr;
+	}
+
 	_inEndpoints[0] = this;
 	_outEndpoints[0] = this;
 
@@ -155,7 +161,6 @@ XUsbDevice::XUsbDevice(void * handle) :
 	static const uint16_t LANGID = 0x0409;
 	_strings[0] = UsbStringDescriptor(0, strDesc0, 4);
 	_strings[0].init(&LANGID, 1);
-	int i = 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -197,7 +202,6 @@ void  XUsbDevice::SOF()
 {
 	if(_dev_state == DEV_CONFIGURED)
 	{
-		//SOFEvent();
 	}
 }
 
@@ -207,7 +211,6 @@ void  XUsbDevice::suspend()
 {
 	_dev_old_state =  _dev_state;
 	_dev_state  = DEV_SUSPENDED;
-	//suspendEvent();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -215,23 +218,18 @@ void  XUsbDevice::suspend()
 void  XUsbDevice::resume()
 {
 	_dev_state = _dev_old_state;
-	//resumeEvent();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
 void  XUsbDevice::isoOutIncomplete(uint8_t epnum)
 {
-	//if(_dev_state == DEV_CONFIGURED)
-	//	isoOutIncompleteEvent(epnum);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
 void XUsbDevice::isoInIncomplete(uint8_t epnum)
 {
-	//if(_dev_state == DEV_CONFIGURED)
-	//	isoInIncompleteEvent(epnum);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -321,7 +319,7 @@ void  XUsbDevice::stdItfReq(UsbSetupRequest * req)
         	case REQ_SET_INTERFACE :
         	{
         		break;
-        		}
+        	}
         	}
         }
         }
