@@ -24,7 +24,7 @@ public:
     {}
 
     inline bool set(T value, size_t index) {
-        memcpy(streamPacket() + sizeof(T) * index, &value, sizeof(T));
+        memcpy(streamPtr() + sizeof(T) * index, &value, sizeof(T));
         return true;
     }
 };

@@ -60,3 +60,10 @@ void QNodeController::logMessage(const char * message)
                                 .arg(message);
     qDebug() << formatted; //! @attention еще раз подумать
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+void QNodeController::logMessage(const QString & message)
+{
+    logMessage(message.toUtf8().data());
+}

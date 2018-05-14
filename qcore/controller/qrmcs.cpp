@@ -86,7 +86,7 @@ QDeviceControllerFactory * QRmcs::loadFactory(const QString & filename)
         return nullptr;
     }
 
-    factory->moveToThread(this);
+    factory->setContext(this);
     return factory;
 }
 

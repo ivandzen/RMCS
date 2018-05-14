@@ -19,6 +19,7 @@ void QUsbIStreamProcessor::run()
         _controller->acquireUsedPacket();
         _controller->processChannels(ArrayRef<Data>(reinterpret_cast<Data*>(_controller->_buffer.data()),
                                                     Length_t(_controller->_buffer.size())));
+
         _controller->releaseFreePacket();
 
         {
@@ -113,6 +114,7 @@ void QUsbIStreamController::beginTransfer()
     _freePacket.acquire(1);
 
     libusb_transfer * tfer = libusb_alloc_transfer(1);
+
     libusb_fill_iso_transfer(tfer, _handle, _epAddr,
                              reinterpret_cast<unsigned char*>(_buffer.data()),
                              _buffer.length(),
@@ -132,25 +134,48 @@ void QUsbIStreamController::beginTransfer()
 
 void QUsbIStreamController::transferCplt(libusb_transfer * tfer)
 {
-    _usedPacket.release(1);
-
     switch(tfer->status)
     {
     case LIBUSB_TRANSFER_COMPLETED :
+    {
+        _usedPacket.release(1);
+        beginTransfer();
+        break;
+    }
+
     case LIBUSB_TRANSFER_ERROR :
+    {
+        _processor->stop();
+        logMessage("Transfer Error. Usb istream stopped.");
+        break;
+    }
+
     case LIBUSB_TRANSFER_STALL :
+    {
+        _processor->stop();
+        logMessage("Transfer stall. Usb istream stopped.");
+        break;
+    }
+
     case LIBUSB_TRANSFER_OVERFLOW :
     case LIBUSB_TRANSFER_TIMED_OUT :
     {
+        _freePacket.release(1);
         beginTransfer();
         break;
     }
 
     case LIBUSB_TRANSFER_NO_DEVICE :
+    {
+        _processor->stop();
+        logMessage("No device. Usb istream stopped.");
+        break;
+    }
+
     case LIBUSB_TRANSFER_CANCELLED :
     {
         _processor->stop();
-        logMessage("Usb istream stopped.");
+        logMessage("Transfer cancelled. Usb istream stopped.");
         break;
     }
     }

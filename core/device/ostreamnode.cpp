@@ -4,19 +4,19 @@
 OStreamNode::OStreamNode(const char * name,
                          NodeType_t type,
                          Device * dev,
-						 uint16_t maxPacketSize) :
+						 uint16_t bufferSize) :
     Node(type, name, dev),
 	_enabled(false),
     _packetSize(0)
 {
-	_buffer.resize(maxPacketSize);
+	_buffer.resize(bufferSize);
 }
 
 bool OStreamNode::addChannel(OStreamChannel * channel)
 {
     if(nodeStatus() != NODE_STAT_UNDEFINED)
         return false;
-    assert(_packetSize + channel->dataLength() < _buffer.size());
+    assert((_packetSize + channel->dataLength()) < _buffer.size());
     channel->_offset = _packetSize;
     _packetSize += channel->dataLength();
     return true;

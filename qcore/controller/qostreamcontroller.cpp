@@ -45,7 +45,7 @@ void QOStreamController::processChannels(const ArrayRef<Data> & buffer)
         return;
 
     Data * ptr_base = buffer.data();
-    for(auto channel : _channels)
+    for(QOStreamChannelController * channel : _channels)
         if(channel->dataOffset() + channel->dataLength() <= buffer.size())
             channel->streamDataReceived(ptr_base + channel->dataOffset());
         else
@@ -60,11 +60,8 @@ bool QOStreamController::eventInit(DeviceController *device)
     if(_enabled == nullptr)
         return false;
 
-    connect(_enabled, &QRWPropertyController::valueChanged,
-            [this](const QVariant & value)
-            {
-                eventStreamToggled(value.toBool());
-            });
+    connect(_enabled, SIGNAL(valueChanged(QVariant)),
+            this, SLOT(eventStreamToggled(QVariant)));
 
     return QNodeController::eventInit(device);
 }

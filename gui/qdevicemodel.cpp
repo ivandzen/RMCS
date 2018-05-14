@@ -50,7 +50,7 @@ private:
 inline bool isSystemNode(QNodeController * node)
 {
     NodeType_t type = node->type();
-    return isParamType(type) || isPropertyType(type);
+    return /*isParamType(type) || */isPropertyType(type);
 }
 
 QDeviceModel::QDeviceModel(QObject * parent) :

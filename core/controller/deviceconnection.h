@@ -9,8 +9,8 @@ class DeviceController;
 class DeviceConnection
 {
 public:
-    typedef std::function<void(void)> TransmitHandler;
-    typedef std::function<void(const ControlPacket &)> ReceiveHandler;
+    typedef std::function<void(bool)> TransmitHandler;
+    typedef std::function<void(const ControlPacket &, bool)> ReceiveHandler;
 
     DeviceConnection() :
         _controller(nullptr) {}
@@ -42,13 +42,13 @@ public:
                                   const ReceiveHandler & handler) = 0;
 
 protected:
-    void errorEvent() const;
+    //void errorEvent() const;
 
-    void timeoutEvent() const;
+    //void timeoutEvent() const;
 
-    void disconnectEvent() const;
+    //void disconnectEvent() const;
 
-    void restartEvent() const;
+    //void restartEvent() const;
 
 private:
     DeviceController * _controller;

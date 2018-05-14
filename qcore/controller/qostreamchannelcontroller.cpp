@@ -26,7 +26,12 @@ bool QOStreamChannelController::setEnabled(bool enabled)
         abortCtlTransfer();
         return false;
     }
-    return submitCtlTransfer(en_packet, [this](){ readData(); });
+    return submitCtlTransfer(en_packet,
+                             [this](bool success)
+    {
+        if(success) readData();
+        else logMessage("setEnabled control transfer not completed");
+    });
 }
 
 ////////////////////////////////////////////////////////////////////////////////

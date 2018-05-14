@@ -10,7 +10,8 @@ IStreamNode::IStreamNode(const char * name,
     Node(type, name, dev),
     _enabled(false),
 	_numPackets(num_packets),
-    _packetSize(0)
+    _packetSize(0),
+	_maxPacketSize(maxPacketSize)
 {
 	_buffer.resize(_numPackets * maxPacketSize);
 }

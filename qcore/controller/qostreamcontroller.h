@@ -18,8 +18,6 @@ public:
 
     bool isStreamEnabled() const;
 
-    bool setStreamEnabled(bool enabled);
-
     bool addChannel(QOStreamChannelController * channel);
 
     inline uint16_t numChannels() const {
@@ -32,12 +30,17 @@ public:
 
     void processChannels(const ArrayRef<Data> & buffer);
 
+public slots:
+    bool setStreamEnabled(bool enabled);
+
 protected:
     virtual bool eventInit(DeviceController * device) override;
 
     virtual bool eventData(const ControlPacket & packet) override;
 
-    virtual void eventStreamToggled(bool enabled) = 0;
+
+protected slots:
+    virtual void eventStreamToggled(const QVariant & enabled) = 0;
 
 private:
     QRWPropertyController *             _enabled;

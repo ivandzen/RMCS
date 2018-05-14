@@ -42,8 +42,7 @@ public:
     }
 
 private:
-    ParamData<T>   _lastData;
+    ParamData<T>   		_lastData;
 };
-
 
 #endif // OPARAM_H

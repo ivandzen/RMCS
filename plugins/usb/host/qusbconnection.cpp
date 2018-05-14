@@ -197,35 +197,37 @@ void QUsbConnection::transferCallback(libusb_transfer * transfer)
         switch(transfer->status)
         {
         case LIBUSB_TRANSFER_COMPLETED :
-            rxHandler(transfer)(_rx_pack);
+            rxHandler(transfer)(_rx_pack, true);
             break;
 
         case LIBUSB_TRANSFER_ERROR :
-            logMessage("libusb : transfer error");
-            errorEvent();
+            logMessage("libusb : control transfer error");
+            rxHandler(transfer)(_rx_pack, false);
             break;
 
         case LIBUSB_TRANSFER_CANCELLED :
-            logMessage("libusb : transfer cancelled");
-            errorEvent();
+            logMessage("libusb : control transfer cancelled");
+            rxHandler(transfer)(_rx_pack, false);
             break;
 
         case LIBUSB_TRANSFER_STALL :
-            logMessage("libusb : transfer stall");
-            errorEvent();
+            logMessage("libusb : control transfer stall");
+            rxHandler(transfer)(_rx_pack, false);
             break;
 
         case LIBUSB_TRANSFER_OVERFLOW :
-            logMessage("libusb : transfer overflow");
-            errorEvent();
+            logMessage("libusb : control transfer overflow");
+            rxHandler(transfer)(_rx_pack, false);
             break;
 
         case LIBUSB_TRANSFER_NO_DEVICE :
-            disconnectEvent();
+            logMessage("libusb : no device");
+            rxHandler(transfer)(_rx_pack, false);
             break;
 
         case LIBUSB_TRANSFER_TIMED_OUT :
-            timeoutEvent();
+            logMessage("libusb : timed out");
+            rxHandler(transfer)(_rx_pack, false);
             break;
         }
 
@@ -236,22 +238,37 @@ void QUsbConnection::transferCallback(libusb_transfer * transfer)
         switch(transfer->status)
         {
         case LIBUSB_TRANSFER_COMPLETED :
-            txHandler(transfer)();
+            txHandler(transfer)(true);
             break;
 
         case LIBUSB_TRANSFER_ERROR :
+            logMessage("libusb : control transfer error");
+            txHandler(transfer)(false);
+            break;
+
         case LIBUSB_TRANSFER_CANCELLED :
+            logMessage("libusb : control transfer cancelled");
+            txHandler(transfer)(false);
+            break;
+
         case LIBUSB_TRANSFER_STALL :
+            logMessage("libusb : control transfer stall");
+            txHandler(transfer)(false);
+            break;
+
         case LIBUSB_TRANSFER_OVERFLOW :
-            errorEvent();
+            logMessage("libusb : control transfer overflow");
+            txHandler(transfer)(false);
             break;
 
         case LIBUSB_TRANSFER_NO_DEVICE :
-            disconnectEvent();
+            logMessage("libusb : no device");
+            txHandler(transfer)(false);
             break;
 
         case LIBUSB_TRANSFER_TIMED_OUT :
-            timeoutEvent();
+            logMessage("libusb : timed out");
+            txHandler(transfer)(false);
             break;
         }
 

@@ -3,7 +3,7 @@
 #include <core/common/arrayref.h>
 #include <string.h>
 
-//#define __packed __attribute__((packed))
+#define __packed __attribute__((packed))
 
 typedef struct __packed
 {

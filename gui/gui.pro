@@ -22,7 +22,8 @@ FORMS += \
     qintropropertyform.ui \
     qintrwpropertyform.ui \
     qiparamform.ui \
-    qoparamform.ui
+    qoparamform.ui \
+    graphform.ui
 
 HEADERS += \
     connfactoriesform.h \
@@ -37,7 +38,9 @@ HEADERS += \
     qiparamform.h \
     qoparamform.h \
     qnodeformfactory.h \
-    qnodeform.h
+    qnodeform.h \
+    qcustomplot.h \
+    graphform.h
 
 SOURCES += \
     connfactoriesform.cpp \
@@ -52,5 +55,7 @@ SOURCES += \
     qiparamform.cpp \
     qoparamform.cpp \
     qnodeformfactory.cpp \
-    qnodeform.cpp
+    qnodeform.cpp \
+    qcustomplot.cpp \
+    graphform.cpp
 

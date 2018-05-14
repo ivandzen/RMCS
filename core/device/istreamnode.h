@@ -23,12 +23,12 @@ public:
     bool addChannel(IStreamChannel * channel);
 
     inline Data * istreamPacket(Length_t idx) {
-    	return _buffer.data() + _packetSize * idx;
+    	return _buffer.data() + packetSize() * idx;
     }
 
     inline Length_t numPackets() const { return _numPackets; }
 
-    inline Length_t packetSize() const { return _packetSize; }
+    inline Length_t packetSize() const { return _maxPacketSize; }
 
     inline bool isStreamEnabled() const { return _enabled; }
 
@@ -52,6 +52,7 @@ private:
     bool        				_enabled;
     Length_t					_numPackets;
     Length_t    				_packetSize;
+    Length_t					_maxPacketSize;
     std::vector<Data>			_buffer;
     std::vector<IStreamChannel*> _channels;
 };

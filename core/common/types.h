@@ -11,11 +11,20 @@
 #include <limits>
 #include <functional>
 
+typedef uint8_t ParamDataID;
+
 template<typename T>
 struct ParamData
 {
-    uint8_t id;
+    ParamDataID id;
     T value;
+
+    inline bool isActual(ParamDataID last_id) const
+    {
+        int delta_id = (id - last_id + std::numeric_limits<ParamDataID>::max()) %
+                        std::numeric_limits<ParamDataID>::max();
+        return (delta_id > 0) && (delta_id < 7);
+    }
 };
 
 typedef uint16_t    NodeType_t;

@@ -13,15 +13,17 @@ public:
     OStreamNode(const char * name,
                 NodeType_t type,
                 Device * dev,
-				uint16_t maxPacketSize);
+				uint16_t bufferSize);
 
     bool addChannel(OStreamChannel * channel);
 
     inline bool isStreamEnabled() const { return _enabled; }
 
-    inline Length_t packetSize() const { return _buffer.size(); }
+    inline Length_t bufferSize() const { return _buffer.size(); }
 
     inline Data * ostreamPacket() { return _buffer.data(); }
+
+    virtual void sync() = 0;
 
 protected:
     virtual bool nodeDataRequested(ControlPacket & packet) const override;

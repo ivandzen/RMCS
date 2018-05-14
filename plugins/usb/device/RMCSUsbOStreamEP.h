@@ -27,7 +27,10 @@ protected:
 
 	virtual void streamToggled(bool enabled) final override;
 
+	virtual void sync() final override;
+
 protected:
+	//virtual bool epDataIn(uint8_t * pdata) final override {}
 	virtual bool epDataIn(uint8_t * pdata) final override;
 };
 

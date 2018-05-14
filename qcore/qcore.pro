@@ -51,6 +51,7 @@ SOURCES += \
     controller/qrmcs.cpp \
     #device/tcpistreamnode.cpp \
     #controller/qtcpistreamcontroller.cpp
+    controller/qdevicecontrollerfactory.cpp
 
 INCLUDEPATH += ../
 

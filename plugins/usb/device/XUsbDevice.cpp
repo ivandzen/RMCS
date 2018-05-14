@@ -20,7 +20,8 @@ XUsbEndpoint::XUsbEndpoint(const UsbEPDescriptor & descriptor,
 		UsbEPDescriptor(descriptor),
 		_handle(nullptr),
 		_status(0),
-		_iface(iface)
+		_iface(iface),
+		_opened(false)
 {}
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -177,11 +178,8 @@ XUsbDevice::~XUsbDevice()
 
 bool  XUsbDevice::dataOutStage(uint8_t epnum, uint8_t * pdata)
 {
-	if(epnum == 0)
+	if((epnum == 0) || (_dev_state == DEV_CONFIGURED))
 		return _outEndpoints[epnum]->epDataOut(pdata);
-	else if(_dev_state == DEV_CONFIGURED)
-		return _outEndpoints[epnum]->epDataOut(pdata);
-
 	return false;
 }
 
@@ -189,11 +187,8 @@ bool  XUsbDevice::dataOutStage(uint8_t epnum, uint8_t * pdata)
 
 bool  XUsbDevice::dataInStage(uint8_t epnum, uint8_t * pdata)
 {
-	if(epnum == 0)
+	if((epnum == 0) || (_dev_state == DEV_CONFIGURED))
 		return _inEndpoints[epnum]->epDataIn(pdata);
-	else if(_dev_state == DEV_CONFIGURED)
-		return _inEndpoints[epnum]->epDataIn(pdata);
-
 	return false;
 }
 
@@ -223,21 +218,21 @@ void  XUsbDevice::resume()
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-void  XUsbDevice::isoOutIncomplete(uint8_t)
+void  XUsbDevice::isoOutIncomplete(uint8_t epnum)
 {
-	//! @todo
+	//_outEndpoints[epnum & 0x7F]->isoOutIncomplete();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-void XUsbDevice::isoInIncomplete(uint8_t)
+void XUsbDevice::isoInIncomplete(uint8_t epnum)
 {
-	//! @todo
+	//_inEndpoints[epnum & 0x7F]->isoInIncomplete();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-void XUsbDevice::reset(Speed)
+void XUsbDevice::reset()
 {
     /* Open EP0 OUT */
 	_inEndpoints[0]->open();
@@ -549,16 +544,13 @@ void XUsbDevice::setConfig(UsbSetupRequest *req)
     	if (cfgidx == 0)
     	{
     		_dev_state = DEV_ADDRESSED;
+    		_configs[_dev_config]->deInit();
     		_dev_config = cfgidx;
-    		_configs[cfgidx]->deInit();
     		ctlSendStatus();
     	}
     	else  if (cfgidx != _dev_config)
     	{
-    		/* Clear old configuration */
     		_configs[_dev_config]->deInit();
-
-    		/* set new configuration */
     		_dev_config = cfgidx;
     		if(!_configs[cfgidx]->initDefaultIface(this))
     		{

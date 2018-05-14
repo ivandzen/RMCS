@@ -36,6 +36,8 @@ protected:
 
     virtual void logMessage(const char * message) override;
 
+    virtual void logMessage(const QString & message);
+
 signals:
     void initialized();
 };

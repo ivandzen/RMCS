@@ -92,13 +92,13 @@ protected:
     ///////////////////////////////////////////////////////////////////////
     /// Backend event handlers
 
-    void backendEventError();
+    //void backendEventError();
 
-    void backendEventTimeout();
+    //void backendEventTimeout();
 
-    void backendEventConnLost();
+    //void backendEventConnLost();
 
-    void backendEventRestart();
+    //void backendEventRestart();
 
 private:
     ///////////////////////////////////////////////////////////////////////
@@ -114,6 +114,8 @@ private:
     void error(const char * message);
 
     void warning(const char * message);
+
+    void setState(DeviceState state);
 
     ///////////////////////////////////////////////////////////////////////
     /// Node related types definintions and endpoints operations

@@ -17,25 +17,31 @@ RMCSUsbOStreamEP::RMCSUsbOStreamEP(const XUsbEndpoint & source,
 					static_cast<RMCSUsbIface*>(source.iface()), mps),
 		XUsbInEndpoint(source)
 {
-	XUsbInEndpoint::init(UsbEPDescriptor::DEFAULT_LENGTH, 0x80 | epnum, USBISTREAM_EP_ATTRIBUTES, mps, 1);
+	XUsbInEndpoint::init(UsbEPDescriptor::DEFAULT_LENGTH, epnum, USBSTREAM_EP_ATTRIBUTES, mps, 0);
 }
 
 bool RMCSUsbOStreamEP::settingsRequested(ControlPacket & packet) const
 {
 	return UsbStreamSettings(packet).init(bEndpointAddress(),
-	                                      packetSize());
+	                                      bufferSize());
 }
 
 void RMCSUsbOStreamEP::streamToggled(bool enabled)
 {
     if(enabled)
-        transmit(ostreamPacket(), packetSize());
+        transmit(ostreamPacket(), bufferSize());
+}
+
+void RMCSUsbOStreamEP::sync()
+{
+	//if(isStreamEnabled())
+	//	transmit(ostreamPacket(), bufferSize());
 }
 
 bool RMCSUsbOStreamEP::epDataIn(uint8_t *)
 {
-    if(!isStreamEnabled())
-        return true;
-    transmit(ostreamPacket(), packetSize());
+    if(isStreamEnabled())
+    	transmit(ostreamPacket(), bufferSize());
     return true;
 }
+

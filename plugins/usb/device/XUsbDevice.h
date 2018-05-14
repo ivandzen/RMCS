@@ -30,12 +30,20 @@ public:
 
 	inline void open()
 	{
-		HAL_XUsbDevice_OpenEP(_handle, bEndpointAddress(), wMaxPacketSize(), bmAttributes() & UsbEPTypeMask);
+		if(!_opened)
+		{
+			HAL_XUsbDevice_OpenEP(_handle, bEndpointAddress(), wMaxPacketSize(), bmAttributes() & UsbEPTypeMask);
+			_opened = true;
+		}
 	}
 
 	inline void close()
 	{
-		HAL_XUsbDevice_CloseEP(_handle, bEndpointAddress());
+		if(_opened)
+		{
+			HAL_XUsbDevice_CloseEP(_handle, bEndpointAddress());
+			_opened = false;
+		}
 	}
 
 	inline void stall()
@@ -50,6 +58,11 @@ public:
 		_status = 0x0001;
 	}
 
+	inline void flush()
+	{
+		HAL_XUsbDevice_Flush(_handle, bEndpointAddress());
+	}
+
 	void reportStatus(XUsbZeroEndpoint * ep0);
 
 	inline void setHandle(void * handle) { _handle = handle; }
@@ -62,6 +75,7 @@ private:
 	void * 		_handle;
 	uint16_t	_status;
 	XUsbIface *	_iface;
+	bool		_opened;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -74,11 +88,20 @@ public:
 		XUsbEndpoint(source)
 	{}
 
+	inline bool init(uint8_t length,
+		             uint8_t epnum,
+		             uint8_t attributes,
+		             uint16_t maxPacketSize,
+		             uint8_t interval)
+	{
+		return XUsbEndpoint::init(length, epnum | 0x80, attributes, maxPacketSize, interval);
+	}
+
 	virtual bool epDataIn(uint8_t * pdata) = 0;
 
 	inline void transmit(uint8_t * pbuf, uint16_t size)
 	{
-		HAL_XUsbDevice_Transmit(handle(), bEndpointAddress() & 0x07, pbuf, size);
+		HAL_XUsbDevice_Transmit(handle(), bEndpointAddress(), pbuf, size);
 	}
 };
 
@@ -92,11 +115,20 @@ public:
 		XUsbEndpoint(source)
 	{}
 
+	inline bool init(uint8_t length,
+	                 uint8_t epnum,
+	                 uint8_t attributes,
+	                 uint16_t maxPacketSize,
+	                 uint8_t interval)
+	{
+		return XUsbEndpoint::init(length, epnum & 0x7F, attributes, maxPacketSize, interval);
+	}
+
 	virtual bool epDataOut(uint8_t * pdata) = 0;
 
 	inline void receive(uint8_t * pbuf, uint16_t size)
 	{
-		HAL_XUsbDevice_Receive(handle(), bEndpointAddress() & 0x07, pbuf, size);
+		HAL_XUsbDevice_Receive(handle(), bEndpointAddress(), pbuf, size);
 	}
 };
 
@@ -191,6 +223,10 @@ protected:
 
 	virtual bool epDataIn(uint8_t * pdata) final override;
 
+	//virtual void isoInIncomplete() final override {}
+
+	//virtual void isoOutIncomplete() final override {}
+
 private:
     typedef enum
 	{
@@ -270,7 +306,7 @@ public:
 
     void SOF();
 
-    void reset(Speed speed);
+    void reset();
 
     void suspend();
 

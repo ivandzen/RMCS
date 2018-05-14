@@ -16,7 +16,9 @@ HEADERS += \
     host/qusbconnection.h \
     host/qusbdevicefactory.h \
     host/qusbistreamcontroller.h \
-    host/qusbostreamcontroller.h
+    host/qusbostreamcontroller.h \
+    common/common.h \
+    common/usbdescriptors.h
 
 SOURCES += \
     host/qusbconnection.cpp \

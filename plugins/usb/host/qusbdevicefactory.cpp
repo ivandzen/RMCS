@@ -151,7 +151,8 @@ QUsbConnection * QUsbDeviceFactory::open(QUsbDevice device)
     }
 
     qDebug() << QString("USB device '%1' connected").arg(device.name());
-    QUsbConnection * new_connection = new QUsbConnection(new_handle, this);
+    QUsbConnection * new_connection = new QUsbConnection(new_handle);
+    new_connection->moveToThread(getContext());
     _connections[device] = new_connection;
     return new_connection;
 }
@@ -205,7 +206,8 @@ QDeviceController *QUsbDeviceFactory::getDevice(const QString & device_name)
             if(new_connection->controller() != nullptr)
                 return new_connection->controller();
 
-            QDeviceController * new_controller = new QDeviceController(new_connection, this);
+            QDeviceController * new_controller = new QDeviceController(new_connection);
+            new_controller->moveToThread(getContext());
             return new_controller;
         }
     return nullptr;

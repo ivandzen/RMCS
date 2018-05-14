@@ -27,7 +27,9 @@ HEADERS += \
     qrmcswrapper.h \
     qropropertycontrollerwrapper.h \
     qrwpropertycontrollerwrapper.h \
-    pyrmcs.h
+    pyrmcs.h \
+    qdevicewindowwrapper.h \
+    graphformwrapper.h
 
 SOURCES += \
     pyrmcs.cpp

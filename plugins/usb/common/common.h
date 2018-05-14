@@ -1,6 +1,7 @@
 #ifndef ISOUSB_COMMON_H
 #define ISOUSB_COMMON_H
 #include <core/common/types.h>
+#include <plugins/usb/common/usbdescriptors.h>
 #include <core/common/control_protocol.h>
 
 #define MAX_ISO_PACKET_LENGTH           1023
@@ -25,9 +26,9 @@
 
 #endif
 
-#define USBISTREAM_EP_ATTRIBUTES (UsbEPDescriptor::EP_ISOC | \
-                       	   	   	  UsbEPDescriptor::SYNC_MODE_NONE | \
-								  UsbEPDescriptor::USAGE_MODE_DATA)
+#define USBSTREAM_EP_ATTRIBUTES (UsbEPDescriptor::EP_BULK | \
+                       	   	   	 UsbEPDescriptor::SYNC_MODE_NONE | \
+								 UsbEPDescriptor::USAGE_MODE_DATA)
 
 #define NODE_TYPE_USBISTREAM 45
 #define NODE_TYPE_USBOSTREAM 46
