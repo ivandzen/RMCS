@@ -102,9 +102,9 @@ void QUsbConnection::abortCtlTransfer()
 ////////////////////////////////////////////////////////////////////////////////
 
 bool QUsbConnection::requestCtlPacket(NodeID_t node_id,
-                                          CtlReq_t type,
-                                          Length_t max_length,
-                                          const ReceiveHandler & handler)
+                                      CtlReq_t type,
+                                      Length_t max_length,
+                                      const ReceiveHandler & handler)
 {
     _semaphore.acquire(1);
 

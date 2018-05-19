@@ -4,7 +4,7 @@ include( $$PWD/../qcore/qcore.pri )
 
 TEMPLATE = lib
 
-QT += core network widgets qml
+QT += core network widgets qml 3dcore 3drender 3dinput 3dlogic 3dextras 3danimation
 
 CONFIG += c++11
 
@@ -23,7 +23,8 @@ FORMS += \
     qintrwpropertyform.ui \
     qiparamform.ui \
     qoparamform.ui \
-    graphform.ui
+    graphform.ui \
+    sensormodelform.ui
 
 HEADERS += \
     connfactoriesform.h \
@@ -40,7 +41,8 @@ HEADERS += \
     qnodeformfactory.h \
     qnodeform.h \
     qcustomplot.h \
-    graphform.h
+    graphform.h \
+    sensormodelform.h
 
 SOURCES += \
     connfactoriesform.cpp \
@@ -57,5 +59,6 @@ SOURCES += \
     qnodeformfactory.cpp \
     qnodeform.cpp \
     qcustomplot.cpp \
-    graphform.cpp
+    graphform.cpp \
+    sensormodelform.cpp
 

@@ -4,45 +4,64 @@
 #include <core/device/device.h>
 #include <core/device/ostreamchannel.h>
 
-template<typename T>
+template<typename T, uint8_t count>
 class OParam :
         public OStreamChannel
 {
 public:
-    typedef std::function<void(T)> onRecvHandler;
+	typedef _ParamData<T> PData;
+	typedef typename PData::IDType PDataID;
+	typedef typename PData::IdxType PDataIdx;
 
     OParam(NodeType_t type,
            const char * name,
            OStreamNode * ostream,
            Node * parent) :
-        OStreamChannel(type, name, ostream, sizeof(ParamData<T>), parent),
-        _lastData({ 0xFF, T() })
+        OStreamChannel(type, name, ostream, PData::byteSize(count), parent),
+		_data(PData(streamPtr(), count)),
+		_curIndex(0)
     {}
 
     OParam(NodeType_t type,
            const char * name,
            OStreamNode * ostream,
            Device * device) :
-        OStreamChannel(type, name, ostream, sizeof(ParamData<T>), device),
-        _lastData({ 0xFF, T() })
+        OStreamChannel(type, name, ostream, PData::byteSize(count), device),
+		_data(PData(streamPtr(), count)),
+		_curIndex(0)
     {}
 
-    inline void write(T value)
-    {
-        ++_lastData.id;
-        _lastData.value = value;
-        //*(ParamData<T> *)OStreamChannel::streamPtr() = _lastData;
-        OStreamChannel::write(reinterpret_cast<Data*>(&_lastData));
+    inline void write(PDataIdx idx, T value) {
+    	_data.set(idx, value);
     }
 
-    inline OParam & operator << (T value)
+    inline void reset() { _curIndex = 0; }
+
+    inline void submit(PDataID id) { _data.setID(id); }
+
+    inline OParam<T, count> & operator<<(T value) {
+    	write(_curIndex, value);
+    	if(++_curIndex >= count)
+    		_curIndex = 0;
+    	return *this;
+    }
+
+protected:
+    virtual bool nodeDataRequested(ControlPacket & dpack) const override
+	{
+    	DataPacket<PDataIdx> sizepack(dpack);
+    	return sizepack.init(count);
+	}
+
+    virtual bool nodeDataReceived(const ControlPacket & dpack) override
     {
-        write(ArrayRef<Data>(reinterpret_cast<Data*>(&value), sizeof (value)));
-        return *this;
+    	(void)dpack;
+    	return false;
     }
 
 private:
-    ParamData<T>   		_lastData;
+    PData		_data;
+    PDataIdx	_curIndex;
 };
 
 #endif // OPARAM_H

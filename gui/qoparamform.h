@@ -23,15 +23,17 @@ public:
     QOParamController * node() const;
 
 private:
-    void updateWidget();
+    //void updateWidget();
 
     Ui::QOParamForm *ui;
 
+    /*
 private slots:
     void onBufferFull();
     void on_resetButton_clicked();
     void on_pauseButton_clicked(bool checked);
     void on_bufSizeOkButton_clicked();
+    */
 };
 
 #endif // QOPARAMFORM_H

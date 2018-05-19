@@ -7,6 +7,7 @@ GraphForm::GraphForm(QWidget *parent) :
     ui(new Ui::GraphForm)
 {
     ui->setupUi(this);
+    startTimer(30);
 }
 
 GraphForm::~GraphForm()
@@ -19,12 +20,90 @@ bool GraphForm::addOParam(QOParamController * param)
     if(_graphs.contains(param))
         return false;
 
-    QCPGraph * newGraph = ui->plot->addGraph();
-    newGraph->setPen(QPen(Qt::GlobalColor(rand() % (int)Qt::darkYellow)));
-    _graphs.insert(param, newGraph);
-    _filters.insert(param, FIRFilter::sliderAverage(1));
-    connect(param, SIGNAL(bufferFull()), this, SLOT(onBufferFull()));
+    GraphSet newSet(param->count());
+
+    for(int i = 0; i < param->count(); ++i)
+    {
+        QCPGraph * newGraph = ui->plot->addGraph();
+        newGraph->setPen(QPen(Qt::GlobalColor(rand() % (int)Qt::darkYellow)));
+        newSet.append(newGraph);
+    }
+
+    _graphs.insert(param, newSet);
+    /*
+    param->setHandler([this](QOParamController * param,
+                             ParamDataID id,
+                             const QVector<QVariant> & values)
+    {
+        GraphSet & set = _graphs[param];
+
+        for(int i = 0; i < values.size(); ++i)
+        {
+            QCPGraph * graph = set[i];
+
+            if(graph == nullptr)
+            {
+                qDebug() << "GraphForm::onBufferFull  Nullptr граф";
+                return;
+            }
+
+            bool found;
+            QCPRange xrange = graph->getKeyRange(found);
+            double x = id;
+            x /= 3.0;
+            //if(found)
+            //    x = xrange.upper + 1;
+
+            bool ok =false;
+            double fvalue = values[i].toDouble(&ok);
+            if(!ok)
+            {
+                qDebug() << "GraphForm::onBufferFull unable to convert value to float";
+                return;
+            }
+
+            //if(fvalue != 0.0)
+            graph->addData(x, fvalue);
+
+            xrange = graph->getKeyRange(found);
+            if(!found)
+            {
+                qDebug() << "GraphForm::onBufferFull  Key range for graph not found. Exit";
+                return;
+            }
+
+            QCPRange yrange = graph->getValueRange(found);
+            if(!found)
+            {
+                qDebug() << "GraphForm::onBufferFull  Value range for graph not found. Exit";
+                return;
+            }
+
+
+            if(xrange.upper > ui->plot->xAxis->range().upper)
+            {
+                ui->plot->xAxis->setRangeUpper(xrange.upper);
+                ui->plot->xAxis->setRangeLower(ui->plot->xAxis->range().upper - 2000);
+            }
+
+            //if(xrange.lower < ui->plot->xAxis->range().lower)
+
+
+            if(yrange.lower < ui->plot->yAxis->range().lower)
+                ui->plot->yAxis->setRangeLower(yrange.lower);
+
+            if(yrange.upper > ui->plot->yAxis->range().upper)
+                ui->plot->yAxis->setRangeLower(yrange.upper);
+        }
+    });
+    */
+    //connect(param, SIGNAL(bufferFull()), this, SLOT(onBufferFull()));
     return true;
+}
+
+void GraphForm::timerEvent(QTimerEvent *event)
+{
+    ui->plot->replot();
 }
 
 void GraphForm::onBufferFull()
@@ -42,21 +121,25 @@ void GraphForm::onBufferFull()
         return;
     }
 
-    QCPGraph * graph = _graphs[param];
-    FIRFilter & filter = _filters[param];
-    if(graph == nullptr)
+    GraphSet & set = _graphs[param];
+
+    /*
+    param->map([this, &set](const QVariant & value)
     {
-        qDebug() << "GraphForm::onBufferFull  Nullptr граф";
-        return;
-    }
+        QCPGraph * graph = set.next();
 
-    bool found;
-    QCPRange xrange = graph->getKeyRange(found);
-    double x = 0;
-    if(found)
-        x = xrange.upper;
+        if(graph == nullptr)
+        {
+            qDebug() << "GraphForm::onBufferFull  Nullptr граф";
+            return;
+        }
 
-    param->map([this, graph, &filter, &x](const QVariant & value) {
+        bool found;
+        QCPRange xrange = graph->getKeyRange(found);
+        double x = 0;
+        if(found)
+            x = xrange.upper + 1;
+
         bool ok =false;
         double fvalue = value.toDouble(&ok);
         if(!ok)
@@ -64,43 +147,43 @@ void GraphForm::onBufferFull()
             qDebug() << "GraphForm::onBufferFull unable to convert value to float";
             return;
         }
-        fvalue = double(filter.exec(fvalue));
-        if(fvalue != 0.0)
-            graph->addData(x, fvalue);
-        x += 1;
+
+        //if(fvalue != 0.0)
+        graph->addData(x, fvalue);
+
+        xrange = graph->getKeyRange(found);
+        if(!found)
+        {
+            qDebug() << "GraphForm::onBufferFull  Key range for graph not found. Exit";
+            return;
+        }
+
+        QCPRange yrange = graph->getValueRange(found);
+        if(!found)
+        {
+            qDebug() << "GraphForm::onBufferFull  Value range for graph not found. Exit";
+            return;
+        }
+
+
+        if(xrange.upper > ui->plot->xAxis->range().upper)
+        {
+            ui->plot->xAxis->setRangeUpper(xrange.upper);
+            ui->plot->xAxis->setRangeLower(ui->plot->xAxis->range().upper - 2000);
+        }
+
+        //if(xrange.lower < ui->plot->xAxis->range().lower)
+
+
+        if(yrange.lower < ui->plot->yAxis->range().lower)
+            ui->plot->yAxis->setRangeLower(yrange.lower);
+
+        if(yrange.upper > ui->plot->yAxis->range().upper)
+            ui->plot->yAxis->setRangeLower(yrange.upper);
     });
 
-    xrange = graph->getKeyRange(found);
-    if(!found)
-    {
-        qDebug() << "GraphForm::onBufferFull  Key range for graph not found. Exit";
-        return;
-    }
-
-    QCPRange yrange = graph->getValueRange(found);
-    if(!found)
-    {
-        qDebug() << "GraphForm::onBufferFull  Value range for graph not found. Exit";
-        return;
-    }
-
-
-    if(xrange.upper > ui->plot->xAxis->range().upper)
-    {
-        ui->plot->xAxis->setRangeUpper(xrange.upper);
-        ui->plot->xAxis->setRangeLower(ui->plot->xAxis->range().upper - 2000);
-    }
-
-    //if(xrange.lower < ui->plot->xAxis->range().lower)
-
-
-    if(yrange.lower < ui->plot->yAxis->range().lower)
-        ui->plot->yAxis->setRangeLower(yrange.lower);
-
-    if(yrange.upper > ui->plot->yAxis->range().upper)
-        ui->plot->yAxis->setRangeLower(yrange.upper);
-
     param->reset();
+    */
 
     ui->plot->replot();
 }

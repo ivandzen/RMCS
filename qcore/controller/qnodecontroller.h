@@ -27,6 +27,8 @@ public:
 
     void update();
 
+    QNodeController * getChild(const QString & name) const;
+
 protected:
     virtual void eventDestroy() override;
 

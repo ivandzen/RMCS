@@ -22,8 +22,6 @@ public:
                    Length_t data_size,
                    Device * dev);
 
-    inline bool isEnabled() const { return _enabled; }
-
     inline Length_t dataLength() const { return _length; }
 
     inline Data * streamPtr() const { return _ostream->ostreamPacket() + _offset; }
@@ -36,13 +34,8 @@ public:
 protected:
     virtual bool settingsRequested(ControlPacket & packet) const override;
 
-    virtual bool nodeDataRequested(ControlPacket & packet) const override;
-
-    virtual bool nodeDataReceived(const ControlPacket & packet) override;
-
 private:
     OStreamNode *   _ostream;
-    bool            _enabled;
     Length_t        _offset;
     Length_t        _length;
 };

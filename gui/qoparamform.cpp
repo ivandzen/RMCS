@@ -11,7 +11,7 @@ QOParamForm::QOParamForm(QOParamController * node,
     ui->setupUi(this);
 
     connect(node, SIGNAL(bufferFull()), this, SLOT(onBufferFull()));
-    updateWidget();
+    //updateWidget();
 }
 
 QOParamForm::~QOParamForm()
@@ -24,6 +24,7 @@ QOParamController *QOParamForm::node() const
     return static_cast<QOParamController*>(QNodeForm::node());
 }
 
+/*
 void QOParamForm::updateWidget()
 {
     switch(node()->state())
@@ -75,3 +76,4 @@ void QOParamForm::on_bufSizeOkButton_clicked()
     node()->setBufferSize(ui->bufSizeSpin->value());
     updateWidget();
 }
+*/

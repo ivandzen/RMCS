@@ -3,46 +3,6 @@
 #include <QDebug>
 #include <QElapsedTimer>
 
-QUsbOStreamProcessor::QUsbOStreamProcessor(QUsbOStreamController * controller) :
-    QThread(nullptr),
-    _controller(controller),
-    _currentPacket(0)
-{
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-void QUsbOStreamProcessor::run()
-{
-    _running = true;
-
-    //! Pointer to the beginning of stream buffer
-    Data * ptr_base = reinterpret_cast<Data*>(_controller->_buffer.data());
-    _currentPacket = 0;
-
-    while(true)
-    {
-        //! Process one packet (distribute packet data across channels)
-        _controller->_readyPackets.acquire(1);
-
-        Data * ptr = ptr_base + _currentPacket * _controller->_packetSize;
-
-        _controller->processChannels(ArrayRef<Data>(ptr, _controller->_packetSize));
-
-        ++_currentPacket;
-        if(_currentPacket >= QUsbOStreamController::NUM_PACKETS)
-            _currentPacket = 0;
-
-        _controller->_freePackets.release(1);
-
-        //! Check exit condition
-        {
-            QMutexLocker locker(&_mutex);
-            if(!_running)
-                break;
-        }
-    }
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -51,48 +11,30 @@ void CALLBACK_ATTRIB ostreamTransferCallback(libusb_transfer * transfer)
     reinterpret_cast<QUSBOStreamReader*>(transfer->user_data)->transferCplt(transfer);
 }
 
-QUSBOStreamReader::QUSBOStreamReader(UsbEPDescriptor::EPType_t type, QUsbOStreamController * controller) :
-    QThread(nullptr),
-    _running(false),
-    _controller(controller),
-    _currentPacket(0),
+QUSBOStreamReader::QUSBOStreamReader(UsbEPDescriptor::EPType_t type,
+                                     libusb_device_handle * handle,
+                                     uint8_t ep_addr,
+                                     QUsbOStreamController * controller) :
+    QOStreamReader(1, controller),
     _transfer(nullptr),
-    _period(1),
-    _type(type)
+    _type(type),
+    _handle(handle),
+    _epAddr(ep_addr)
 {
 }
 
-void QUSBOStreamReader::run()
+bool QUSBOStreamReader::beginTransfer(char * ptr,
+                                      Length_t num_packets,
+                                      Length_t pack_size)
 {
-    _running = true;
-    _currentPacket = 0;
-    logMessage("Reader started");
-    while(_running)
-    {
-        beginTransfer();
-        QThread::usleep(_period * 1000);
-    }
-}
-
-void QUSBOStreamReader::beginTransfer()
-{
-    int num_packets = QUsbOStreamController::NUM_PACKETS - _currentPacket;
-    if(num_packets > QUsbOStreamController::PACKETS_PER_TRANSFER)
-        num_packets = QUsbOStreamController::PACKETS_PER_TRANSFER;
-
-    _controller->_freePackets.acquire(num_packets);
-
     if(_transfer != nullptr)
     {
-        logMessage("beginTransfer : not null transfer.");
-        return;
+        //logMessage("beginTransfer : not null transfer.");
+        return false;
     }
 
-    char * ptr = _controller->_buffer.data() + _currentPacket * _controller->_packetSize;
-
-
     if(num_packets == 0)
-        return;
+        return false;
 
     switch(_type)
     {
@@ -102,15 +44,13 @@ void QUSBOStreamReader::beginTransfer()
         if(_transfer == nullptr)
         {
             logMessage("beginTransfer : transfer not allocated!");
-            return;
+            return false;
         }
 
-        libusb_fill_bulk_transfer(_transfer,
-                                  _controller->_handle,
-                                  _controller->_epAddr,
+        libusb_fill_bulk_transfer(_transfer, _handle, _epAddr,
                                   reinterpret_cast<unsigned char*>(ptr),
-                                  num_packets * _controller->_packetSize,
-                                  ostreamTransferCallback, this, 0);
+                                  num_packets * pack_size,
+                                  ostreamTransferCallback, this, 1);
         break;
     }
 
@@ -120,40 +60,41 @@ void QUSBOStreamReader::beginTransfer()
         if(_transfer == nullptr)
         {
             logMessage("beginTransfer : transfer not allocated!");
-            return;
+            return false;
         }
 
-        libusb_fill_iso_transfer(_transfer,
-                                 _controller->_handle,
-                                 _controller->_epAddr,
+        libusb_fill_iso_transfer(_transfer, _handle, _epAddr,
                                  reinterpret_cast<unsigned char*>(ptr),
-                                 num_packets * _controller->_packetSize,
+                                 num_packets * pack_size,
                                  num_packets,
-                                 ostreamTransferCallback, this, 0);
+                                 ostreamTransferCallback, this, 1);
 
-        libusb_set_iso_packet_lengths(_transfer, _controller->_packetSize);
+        libusb_set_iso_packet_lengths(_transfer, pack_size);
         break;
     }
 
     case UsbEPDescriptor::EP_CTRL :
     case UsbEPDescriptor::EP_INTR :
         logMessage("Stream supported only on Bulk and Isochronous endpoints");
-        return;
+        return false;
     }
 
-    if(libusb_submit_transfer(_transfer) != 0)
-        logMessage("Unable to submit usb transfer");
+    int result = libusb_submit_transfer(_transfer);
+    if(result == 0)
+        return true;
+
+    logMessage(libusb_error_name(result));
+    return  false;
 }
 
 void QUSBOStreamReader::transferCplt(libusb_transfer * tfer)
 {
-    int ready_packets = 0;
-    int last_resources = QUsbOStreamController::NUM_PACKETS - _controller->_freePackets.available();
+    Length_t ready_packets = 0;
 
     switch(_type)
     {
     case UsbEPDescriptor::EP_BULK :
-        ready_packets = _transfer->actual_length / _controller->_packetSize;
+        ready_packets = _transfer->actual_length / packetSize();
         break;
 
     case UsbEPDescriptor::EP_ISOC :
@@ -174,91 +115,70 @@ void QUSBOStreamReader::transferCplt(libusb_transfer * tfer)
     {
     case LIBUSB_TRANSFER_COMPLETED :
     {
-        if(ready_packets == 0)
-        {
-            logMessage("0 packets ready");
-            return;
-        }
-
-        _controller->_readyPackets.release(ready_packets);
-        _currentPacket += ready_packets;
-        if(_currentPacket >= QUsbOStreamController::NUM_PACKETS)
-            _currentPacket = 0;
+        endTransfer(ready_packets, TFER_COMPLETE);
         break;
     }
 
     case LIBUSB_TRANSFER_ERROR :
     {
         logMessage("Transfer error.");
-        _controller->_freePackets.release(last_resources);
-        emit shutDown();
+        endTransfer(ready_packets, TFER_ERROR);
         break;
     }
 
     case LIBUSB_TRANSFER_STALL :
     {
         logMessage("Transfer stall.");
-        _controller->_freePackets.release(last_resources);
-        emit shutDown();
+        endTransfer(ready_packets, TFER_STOP);
         break;
     }
 
     case LIBUSB_TRANSFER_OVERFLOW :
     {
         logMessage("Transfer overflow");
-        _controller->_freePackets.release(QUsbOStreamController::PACKETS_PER_TRANSFER);
+        endTransfer(ready_packets, TFER_ERROR);
         break;
     }
 
     case LIBUSB_TRANSFER_TIMED_OUT :
     {
         logMessage("Transfer timeout");
-        _controller->_freePackets.release(QUsbOStreamController::PACKETS_PER_TRANSFER);
+        endTransfer(ready_packets, TFER_ERROR);
         break;
     }
 
     case LIBUSB_TRANSFER_NO_DEVICE :
     {
         logMessage("No device. Stream stopped.");
-        _controller->_freePackets.release(last_resources);
-        emit shutDown();
+        endTransfer(ready_packets, TFER_STOP);
         break;
     }
 
     case LIBUSB_TRANSFER_CANCELLED :
     {
         logMessage("Transfer cancelled.");
-        _controller->_freePackets.release(last_resources);
+        endTransfer(ready_packets, TFER_STOP);
         break;
     }
     }
 }
 
-void QUSBOStreamReader::logMessage(const QString & message)
-{
-    _controller->logMessage(message);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
+
+#define USB_DEF_BUF_CAP 128
+#define USB_DEF_PPT     2
 
 QUsbOStreamController::QUsbOStreamController(libusb_device_handle * usb_handle,
                                              QDeviceConnection * conn,
                                              NodeID_t node_id,
                                              NodeID_t parent_id,
                                              const QString & name) :
-    QOStreamController (node_id, parent_id, name, conn),
-    _processor(nullptr),
-    _reader(nullptr),
-    _handle(usb_handle),
-    _epAddr(0x00),
-    _packetSize(0)
+    QOStreamController (USB_DEF_BUF_CAP,
+                        USB_DEF_PPT, node_id,
+                        parent_id, name, conn),
+    _handle(usb_handle)
 {
-    //! For simplicity
-    Q_ASSERT((NUM_PACKETS % PACKETS_PER_TRANSFER) == 0);
-    _freePackets.release(NUM_PACKETS);
 }
-
-////////////////////////////////////////////////////////////////////////////////
 
 QNodeController *QUsbOStreamController::createInstance(NodeID_t node_id,
                                                        NodeID_t parent_id,
@@ -268,37 +188,13 @@ QNodeController *QUsbOStreamController::createInstance(NodeID_t node_id,
     return new QUsbOStreamController(_handle, conn, node_id, parent_id, name);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
-void QUsbOStreamController::eventDestroy()
-{
-    _processor->stop();
-    _reader->stop();
-    _processor->deleteLater();
-    _reader->deleteLater();
-    QOStreamController::eventDestroy();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-bool QUsbOStreamController::eventInit(DeviceController * controller)
-{
-    _processor = new QUsbOStreamProcessor(this);
-    _processor->moveToThread(thread());
-    return QOStreamController::eventInit(controller);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
 bool QUsbOStreamController::eventSetup(const ControlPacket & packet)
 {
     UsbStreamSettings settings(packet);
     if(!settings.isValid())
         return false;
 
-    _epAddr = settings.epAddr();
-    _packetSize = settings.packetSize();
-    _buffer.resize(_packetSize * NUM_PACKETS);
+    setPacketSize(settings.packetSize());
 
     libusb_config_descriptor * config;
 
@@ -312,54 +208,18 @@ bool QUsbOStreamController::eventSetup(const ControlPacket & packet)
 
     const struct libusb_interface_descriptor * iface = config->interface[ISOUSB_BASE_INTERFACE].altsetting;
     for(uint8_t ep_num = 0; ep_num < iface->bNumEndpoints; ++ep_num)
-        if(iface->endpoint[ep_num].bEndpointAddress == _epAddr)
+        if(iface->endpoint[ep_num].bEndpointAddress == settings.epAddr())
         {
-            _reader = new QUSBOStreamReader(UsbEPDescriptor::EPType_t(iface->endpoint[ep_num].bmAttributes & 0x03), this);
-            _reader->moveToThread(thread());
-            connect(_reader, SIGNAL(shutDown()), this, SLOT(onReaderShutDown()));
-            logMessage("QUsbOStreamReader created");
+            UsbEPDescriptor::EPType_t ep_type = UsbEPDescriptor::EPType_t (iface->endpoint[ep_num].bmAttributes & 0x03);
+            bool result = setReader(new QUSBOStreamReader(ep_type, _handle, settings.epAddr(), this));
+            if(!result)
+                logMessage("QUsbOStreamReader not created!");
+
             libusb_free_config_descriptor(config);
-            return true;
+            return result;
         }
 
     logMessage("Enpoint not found");
     libusb_free_config_descriptor(config);
     return true;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-void QUsbOStreamController::eventStreamToggled(const QVariant & enabled)
-{
-    if(!enabled.isValid())
-    {
-        logMessage("eventStreamToggled : Invalid variant in paramenter");
-        return;
-    }
-
-    if(_reader == nullptr)
-    {
-        logMessage("Reader not created. Controller not ready");
-        return;
-    }
-
-    if(enabled.toBool())
-    {
-        _processor->start();
-        _reader->start();
-        logMessage("Turn on UsbOStream");
-    }
-    else
-    {
-        _reader->stop();
-        _processor->stop();
-        logMessage("Turn off UsbOStream");
-    }
-}
-
-void QUsbOStreamController::onReaderShutDown()
-{
-    logMessage("Shut down stream");
-    _reader->stop();
-    _processor->stop();
 }

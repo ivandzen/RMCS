@@ -2,183 +2,200 @@
 #define ENDPOINTS_H
 #include <core/device/iparam.h>
 #include <core/device/oparam.h>
-#include <core/device/rawichannel.h>
-#include <core/device/rawochannel.h>
 
-
+template<uint8_t count>
 class Int8IParam :
-        public IParam<int8_t>
+        public IParam<int8_t, count>
 {
 public:
+	typedef typename IParam<int8_t, count>::onRecvHandler onRecvHandler;
+
 	Int8IParam(const char * name,
 				IStreamNode * istream,
 				const onRecvHandler & handler,
 				Node * parent) :
-                    IParam<int8_t>(handler, NODE_TYPE_INT8_IPARAM, name, istream, parent)
+                    IParam<int8_t, count>(handler, NODE_TYPE_INT8_IPARAM, name, istream, parent)
 	{}
 
 	Int8IParam(const char * name,
 				IStreamNode * istream,
 				const onRecvHandler & handler,
 				Device * dev) :
-                    IParam<int8_t>(handler, NODE_TYPE_INT8_IPARAM, name, istream, dev)
+                    IParam<int8_t, count>(handler, NODE_TYPE_INT8_IPARAM, name, istream, dev)
 	{}
 };
 
+template<uint8_t count>
 class Int16IParam :
-        public IParam<int16_t>
+        public IParam<int16_t, count>
 {
 public:
+	typedef typename IParam<int8_t, count>::onRecvHandler onRecvHandler;
+
 	Int16IParam(const char * name,
 				IStreamNode * istream,
 				const onRecvHandler & handler,
 				Node * parent) :
-                    IParam<int16_t>(handler, NODE_TYPE_INT16_IPARAM, name, istream, parent)
+                    IParam<int16_t, count>(handler, NODE_TYPE_INT16_IPARAM, name, istream, parent)
 	{}
 
 	Int16IParam(const char * name,
 				IStreamNode * istream,
 				const onRecvHandler & handler,
 				Device * dev) :
-                    IParam<int16_t>(handler, NODE_TYPE_INT16_IPARAM, name, istream, dev)
+                    IParam<int16_t, count>(handler, NODE_TYPE_INT16_IPARAM, name, istream, dev)
 	{}
 };
 
+template<uint8_t count>
 class Int32IParam :
-        public IParam<int32_t>
+        public IParam<int32_t, count>
 {
 public:
+	typedef typename IParam<int8_t, count>::onRecvHandler onRecvHandler;
+
 	Int32IParam(const char * name,
 				IStreamNode * istream,
 				const onRecvHandler & handler,
 				Node * parent) :
-                    IParam<int32_t>(handler, NODE_TYPE_INT32_IPARAM, name, istream, parent)
+                    IParam<int32_t, count>(handler, NODE_TYPE_INT32_IPARAM, name, istream, parent)
 	{}
 
 	Int32IParam(const char * name,
 				IStreamNode * istream,
 				const onRecvHandler & handler,
 				Device * dev) :
-                    IParam<int32_t>(handler, NODE_TYPE_INT32_IPARAM, name, istream, dev)
+                    IParam<int32_t, count>(handler, NODE_TYPE_INT32_IPARAM, name, istream, dev)
 	{}
 };
 
+template<uint8_t count>
 class Float32IParam :
-		public IParam<float>
+		public IParam<float, count>
 {
 public:
+	typedef typename IParam<int8_t, count>::onRecvHandler onRecvHandler;
+
 	Float32IParam(const char * name,
 				  IStreamNode * istream,
 				  const onRecvHandler & handler,
 				  Node * parent) :
-					  IParam<float>(handler, NODE_TYPE_FLOAT32_IPARAM, name, istream, parent)
+					  IParam<float, count>(handler, NODE_TYPE_FLOAT32_IPARAM, name, istream, parent)
 	{}
 
 	Float32IParam(const char * name,
 				  IStreamNode * istream,
 				  const onRecvHandler & handler,
 				  Device * dev) :
-					  IParam<float>(handler, NODE_TYPE_FLOAT32_IPARAM, name, istream, dev)
+					  IParam<float, count>(handler, NODE_TYPE_FLOAT32_IPARAM, name, istream, dev)
 	{}
 };
 
+template<uint8_t count>
 class Float64IParam :
-		public IParam<double>
+		public IParam<double, count>
 {
 public:
+	typedef typename IParam<int8_t, count>::onRecvHandler onRecvHandler;
+
 	Float64IParam(const char * name,
 				  IStreamNode * istream,
 				  const onRecvHandler & handler,
 				  Node * parent) :
-					  IParam<double>(handler, NODE_TYPE_FLOAT64_IPARAM, name, istream, parent)
+					  IParam<double, count>(handler, NODE_TYPE_FLOAT64_IPARAM, name, istream, parent)
 	{}
 
 	Float64IParam(const char * name,
 				  IStreamNode * istream,
 				  const onRecvHandler & handler,
 				  Device * dev) :
-					  IParam<double>(handler, NODE_TYPE_FLOAT64_IPARAM, name, istream, dev)
+					  IParam<double, count>(handler, NODE_TYPE_FLOAT64_IPARAM, name, istream, dev)
 	{}
 };
 
 ///////////////////////////////////////////////////////////////////////////////////
 
+template<uint8_t size>
 class Int8OParam :
-        public OParam<int8_t>
+        public OParam<int8_t, size>
 {
 public:
 	Int8OParam(const char * name,
 				OStreamNode * ostream,
 				Node * parent) :
-                    OParam<int8_t>(NODE_TYPE_INT8_OPARAM, name, ostream, parent)
+                    OParam<int8_t, size>(NODE_TYPE_INT8_OPARAM, name, ostream, parent)
 	{}
 
 	Int8OParam(const char * name,
 				OStreamNode * ostream,
 				Device * dev) :
-                    OParam<int8_t>(NODE_TYPE_INT8_OPARAM, name, ostream, dev)
+                    OParam<int8_t, size>(NODE_TYPE_INT8_OPARAM, name, ostream, dev)
 	{}
 };
 
+template<uint8_t count>
 class Int16OParam :
-        public OParam<int16_t>
+        public OParam<int16_t, count>
 {
 public:
 	Int16OParam(const char * name,
 				 OStreamNode * ostream,
 				 Node * parent) :
-                    OParam<int16_t>(NODE_TYPE_INT16_OPARAM, name, ostream, parent)
+                    OParam<int16_t, count>(NODE_TYPE_INT16_OPARAM, name, ostream, parent)
 	{}
 
 	Int16OParam(const char * name,
 				 OStreamNode * ostream,
 				 Device * dev) :
-                    OParam<int16_t>(NODE_TYPE_INT16_OPARAM, name, ostream, dev)
+                    OParam<int16_t, count>(NODE_TYPE_INT16_OPARAM, name, ostream, dev)
 	{}
 };
 
+template<uint8_t count>
 class Int32OParam :
-        public OParam<int32_t>
+        public OParam<int32_t, count>
 {
 public:
 	Int32OParam(const char * name,
 				 OStreamNode * ostream,
 				 Node * parent) :
-                     OParam<int32_t>(NODE_TYPE_INT32_OPARAM, name, ostream, parent)
+                     OParam<int32_t, count>(NODE_TYPE_INT32_OPARAM, name, ostream, parent)
 	{}
 
 	Int32OParam(const char * name,
 				OStreamNode * ostream,
 				Device * dev) :
-	                     OParam<int32_t>(NODE_TYPE_INT32_OPARAM, name, ostream, dev)
+	                     OParam<int32_t, count>(NODE_TYPE_INT32_OPARAM, name, ostream, dev)
 		{}
 };
 
+template<uint8_t count>
 class Float32OParam :
-		public OParam<float>
+		public OParam<float, count>
 {
 public:
 	Float32OParam(const char * name,
 				  OStreamNode * ostream,
                   Node * parent) :
-        OParam<float>(NODE_TYPE_FLOAT32_OPARAM, name, ostream, parent)
+        OParam<float, count>(NODE_TYPE_FLOAT32_OPARAM, name, ostream, parent)
 	{}
 
 	Float32OParam(const char * name,
 				  OStreamNode * ostream,
 	              Device * dev) :
-	        OParam<float>(NODE_TYPE_FLOAT32_OPARAM, name, ostream, dev)
+	        OParam<float, count>(NODE_TYPE_FLOAT32_OPARAM, name, ostream, dev)
 		{}
 };
 
+template<uint8_t count>
 class Float64OParam :
-		public OParam<double>
+		public OParam<double, count>
 {
 public:
 	Float64OParam(const char * name,
 				  OStreamNode * ostream,
                   Node * parent) :
-        OParam<double>(NODE_TYPE_FLOAT64_OPARAM,
+        OParam<double, count>(NODE_TYPE_FLOAT64_OPARAM,
                        name,
                        ostream,
                        parent)
@@ -187,85 +204,11 @@ public:
 	Float64OParam(const char * name,
 				  OStreamNode * ostream,
 	              Device * dev) :
-	    OParam<double>(NODE_TYPE_FLOAT64_OPARAM,
+	    OParam<double, count>(NODE_TYPE_FLOAT64_OPARAM,
 	                   name,
 	                   ostream,
 	                   dev)
 		{}
-};
-
-///////////////////////////////////////////////////////////////////////////////////
-
-template <size_t buffer_size>
-class RawInt8OChannel :
-        public RawOChannel<int8_t, buffer_size>
-{
-public:
-    RawInt8OChannel(const char * name,
-                    OStreamNode * ostream,
-                    Node * parent) :
-        RawOChannel<uint8_t, buffer_size>(NODE_TYPE_RAW_INT8_OCHANNEL,
-                                          name,
-                                          ostream,
-                                          parent)
-    {}
-
-    RawInt8OChannel(const char * name,
-                    OStreamNode * ostream,
-                    Device * dev) :
-            RawOChannel<uint8_t, buffer_size>(NODE_TYPE_RAW_INT8_OCHANNEL,
-                                              name,
-                                              ostream,
-                                              dev)
-        {}
-};
-
-template <size_t buffer_size>
-class RawInt16OChannel :
-        public RawOChannel<int16_t, buffer_size>
-{
-public:
-    RawInt16OChannel(const char * name,
-                     OStreamNode * ostream,
-                     Node * parent) :
-        RawOChannel<uint16_t, buffer_size>(NODE_TYPE_RAW_INT16_OCHANNEL,
-                                           name,
-                                           ostream,
-                                           parent)
-    {}
-
-    RawInt16OChannel(const char * name,
-                     OStreamNode * ostream,
-                     Device * dev) :
-            RawOChannel<uint16_t, buffer_size>(NODE_TYPE_RAW_INT16_OCHANNEL,
-                                               name,
-                                               ostream,
-                                               dev)
-        {}
-};
-
-template <size_t buffer_size>
-class RawInt32OChannel :
-        public RawOChannel<int32_t, buffer_size>
-{
-public:
-    RawInt32OChannel(const char * name,
-                     OStreamNode * ostream,
-                     Node * parent) :
-        RawOChannel<uint32_t, buffer_size>(NODE_TYPE_RAW_INT32_OCHANNEL,
-                                           name,
-                                           ostream,
-                                           parent)
-    {}
-
-    RawInt32OChannel(const char * name,
-                     OStreamNode * ostream,
-                     Device * dev) :
-            RawOChannel<uint32_t, buffer_size>(NODE_TYPE_RAW_INT32_OCHANNEL,
-                                               name,
-                                               ostream,
-                                               dev)
-        {}
 };
 
 #endif // ENDPOINTS_H

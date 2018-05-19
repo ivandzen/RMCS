@@ -3,90 +3,32 @@
 #include <qcore/controller/qostreamcontroller.h>
 #include <usb/common/common.h>
 #include <libusb.h>
-#include <QThread>
-#include <QSemaphore>
-#include <QMutexLocker>
-#include <QElapsedTimer>
 
 class QUsbOStreamController;
 
-class QUsbOStreamProcessor :
-        public QThread
-{
-    Q_OBJECT
-public:
-    explicit QUsbOStreamProcessor(QUsbOStreamController * controller);
-
-    inline void start()
-    {
-        QMutexLocker locker(&_mutex);
-        if(_running) return;
-        _running = true;
-        QThread::start();
-    }
-
-    inline void stop()
-    {
-        QMutexLocker locker(&_mutex);
-        _running = false;
-    }
-
-protected:
-    virtual void run() final override;
-
-private:
-    bool                    _running;
-    QMutex                  _mutex;
-    QUsbOStreamController * _controller;
-    Length_t                _currentPacket;
-};
-
-///////////////////////////////////////////////////////////////////////
-
 class QUSBOStreamReader :
-        public QThread
+        public QOStreamReader
 {
     Q_OBJECT
     friend void CALLBACK_ATTRIB ostreamTransferCallback(libusb_transfer * transfer);
 
 public:
     QUSBOStreamReader(UsbEPDescriptor::EPType_t type,
+                      libusb_device_handle * handle,
+                      uint8_t ep_addr,
                       QUsbOStreamController * controller);
 
-    inline void start()
-    {
-        QMutexLocker locker(&_mutex);
-        if(_running) return;
-        _running = true;
-        QThread::start();
-    }
-
-    inline void stop()
-    {
-        QMutexLocker locker(&_mutex);
-        _running = false;
-    }
-
-signals:
-    void shutDown();
-
-protected:
-    virtual void run() final override;
-
 private:
-    void beginTransfer();
+    virtual bool beginTransfer(char * ptr,
+                               Length_t num_packets,
+                               Length_t pack_size) final override;
 
     void transferCplt(struct libusb_transfer * tfer);
 
-    void logMessage(const QString & message);
-
-    bool                    _running;
-    QMutex                  _mutex;
-    QUsbOStreamController * _controller;
-    int                     _currentPacket;
     struct libusb_transfer * _transfer;
-    uint16_t                _period;
     UsbEPDescriptor::EPType_t _type;
+    libusb_device_handle *  _handle;
+    uint8_t                 _epAddr;
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -95,7 +37,7 @@ class QUsbOStreamController :
         public QOStreamController
 {
     Q_OBJECT
-    friend class QUsbOStreamProcessor;
+    friend class QOStreamProcessor;
     friend class QUSBOStreamReader;
     friend class QUSBOStreamReader;
 
@@ -117,28 +59,12 @@ public:
     virtual NodeType_t type() const final override { return NODE_TYPE_USBOSTREAM; }
 
 protected:
-    virtual void eventDestroy() override;
-
-    virtual bool eventInit(DeviceController * controller) override;
-
     virtual bool eventSetup(const ControlPacket & packet) override;
-
-    virtual void eventStreamToggled(const QVariant & enabled) override;
 
 private:
     inline unsigned int timeout() const { return PACKETS_PER_TRANSFER * 1000; }
 
-    QUsbOStreamProcessor *  _processor;
-    QUSBOStreamReader * _reader;
     libusb_device_handle *  _handle;
-    uint8_t                 _epAddr;
-    Length_t                _packetSize;
-    QByteArray              _buffer;
-    QSemaphore              _readyPackets;
-    QSemaphore              _freePackets;
-
-private slots:
-    void onReaderShutDown();
 };
 
 #endif // QUSBBULKOSTREAMCONTROLLER_H

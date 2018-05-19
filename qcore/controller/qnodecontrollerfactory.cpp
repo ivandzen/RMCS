@@ -21,11 +21,12 @@ QNodeControllerFactory::QNodeControllerFactory(QObject *parent) :
     addPrototype(new QIParamController(NODE_TYPE_FLOAT32_IPARAM));
     addPrototype(new QIParamController(NODE_TYPE_FLOAT64_IPARAM));
 
-    addPrototype(new QOParamController(NODE_TYPE_INT8_OPARAM));
-    addPrototype(new QOParamController(NODE_TYPE_INT16_OPARAM));
-    addPrototype(new QOParamController(NODE_TYPE_INT32_OPARAM));
-    addPrototype(new QOParamController(NODE_TYPE_FLOAT32_OPARAM));
-    addPrototype(new QOParamController(NODE_TYPE_FLOAT64_OPARAM));
+    addPrototype(new QInt16OParamController());
+    //addPrototype(new QOParamController(NODE_TYPE_INT8_OPARAM));
+    //addPrototype(new QOParamController(NODE_TYPE_INT16_OPARAM));
+    //addPrototype(new QOParamController(NODE_TYPE_INT32_OPARAM));
+    //addPrototype(new QOParamController(NODE_TYPE_FLOAT32_OPARAM));
+    //addPrototype(new QOParamController(NODE_TYPE_FLOAT64_OPARAM));
 
     addPrototype(new QROPropertyController(NODE_TYPE_BOOL_PROP_RDONLY));
     addPrototype(new QROPropertyController(NODE_TYPE_INT_PROP_RDONLY));

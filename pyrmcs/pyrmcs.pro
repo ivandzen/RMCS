@@ -29,7 +29,9 @@ HEADERS += \
     qrwpropertycontrollerwrapper.h \
     pyrmcs.h \
     qdevicewindowwrapper.h \
-    graphformwrapper.h
+    graphformwrapper.h \
+    qint16oparamcontrollerwrapper.h
 
 SOURCES += \
-    pyrmcs.cpp
+    pyrmcs.cpp \
+    qint16oparamcontrollerwrapper.cpp

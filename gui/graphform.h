@@ -66,10 +66,35 @@ public:
 
     bool addOParam(QOParamController * param);
 
+protected:
+    virtual void timerEvent(QTimerEvent * event) override;
+
 private:
     Ui::GraphForm *ui;
-    QHash<QOParamController*, QCPGraph*> _graphs;
-    QHash<QOParamController*, FIRFilter> _filters;
+
+    class GraphSet : public QVector<QCPGraph*>
+    {
+    public:
+        explicit GraphSet(ParamDataIdx max = 0) :
+            _current(0),
+            _max(max)
+        {
+            reserve(max);
+        }
+
+        inline QCPGraph * next() {
+            QCPGraph * result = at(_current);
+            if(++_current == _max)
+                _current = 0;
+            return result;
+        }
+
+    private:
+        ParamDataIdx _current;
+        ParamDataIdx _max;
+    };
+
+    QHash<QOParamController*, GraphSet> _graphs;
 
 private slots:
     void onBufferFull();

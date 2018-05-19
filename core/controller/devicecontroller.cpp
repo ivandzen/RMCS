@@ -224,7 +224,13 @@ void DeviceController::parseNodeDescriptor(const ControlPacket & packet)
         return;
     }
 
-    error("Node controller not created.");
+    char msg[1024];
+    sprintf(msg,
+            "Node controller not created. type = %d, id = %d, parentId = %d",
+            descriptor.nodeType(),
+            descriptor.id(),
+            descriptor.parent_id());
+    error(msg);
     return;
 }
 

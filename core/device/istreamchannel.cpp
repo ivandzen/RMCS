@@ -9,7 +9,6 @@ IStreamChannel::IStreamChannel(NodeType_t type,
                                Length_t data_size,
                                Node * parent) :
     Node (type, name, parent),
-    _enabled(true),
     _istream(istream),
     _offset(0),
     _length(data_size)
@@ -23,7 +22,6 @@ IStreamChannel::IStreamChannel(NodeType_t type,
                                Length_t data_size,
                                Device * dev) :
     Node(type, name, dev),
-    _enabled(true),
     _istream(istream),
     _offset(0),
     _length(data_size)
@@ -35,24 +33,4 @@ bool IStreamChannel::settingsRequested(ControlPacket & packet) const
 {
     return StreamChannelSettings(packet).
             init(_istream->id(), _offset, _length);
-}
-
-bool IStreamChannel::nodeDataRequested(ControlPacket & packet) const
-{
-    DataPacket<bool> channel_state(packet);
-    return channel_state.init(_enabled);
-}
-
-bool IStreamChannel::nodeDataReceived(const ControlPacket &packet)
-{
-    DataPacket<bool> channel_state(packet);
-
-    if(!channel_state.isValid())
-    {
-        //! @todo printLog("nodeDataReceived : Invalid packet");
-        return false;
-    }
-
-    _enabled = *channel_state.get();
-    return true;
 }

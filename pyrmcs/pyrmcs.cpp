@@ -12,6 +12,7 @@
 #include "qoparamcontrollerwrapper.h"
 #include "qdevicewindowwrapper.h"
 #include "graphformwrapper.h"
+#include "qint16oparamcontrollerwrapper.h"
 #include "PythonQt.h"
 #include <QDebug>
 
@@ -57,4 +58,8 @@ void PythonRmcs::init()
     PythonQt::self()->registerCPPClass("GraphForm",
                                        "", "Rmcs",
                                        PythonQtCreateObject<GraphFormWrapper>);
+    PythonQt::self()->registerCPPClass("QInt16OParamController", "", "Rmcs",
+                                       PythonQtCreateObject<QInt16OParamControllerWrapper>);
+
+
 }

@@ -7,31 +7,13 @@ QOStreamChannelController::QOStreamChannelController(NodeID_t node_id,
                                                      NodeID_t parent_id,
                                                      const QString & name,
                                                      QDeviceConnection * dev) :
-    QNodeController(node_id, parent_id, name, dev)
+    QNodeController(node_id, parent_id, name, dev),
+    _streamId(NodeIDNull),
+    _dataOffset(0),
+    _dataLength(0),
+    _count(0)
 {
 
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-bool QOStreamChannelController::setEnabled(bool enabled)
-{
-    if(enabled == _enabled)
-        return true;
-
-    DataPacket<bool> en_packet(beginCtlTransfer());
-    if(!en_packet.init(enabled))
-    {
-        logMessage("Error while initializing ctl transfer");
-        abortCtlTransfer();
-        return false;
-    }
-    return submitCtlTransfer(en_packet,
-                             [this](bool success)
-    {
-        if(success) readData();
-        else logMessage("setEnabled control transfer not completed");
-    });
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -50,23 +32,6 @@ bool QOStreamChannelController::eventSetup(const ControlPacket & packet)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-bool QOStreamChannelController::eventData(const ControlPacket &packet)
-{
-    DataPacket<bool> en_packet(packet);
-    if(!en_packet.isValid())
-        return false;
-
-    if(_enabled != *en_packet.get())
-    {
-        _enabled = *en_packet.get();
-        emit toggled(_enabled);
-        toggledEvent(_enabled);
-    }
-    return true;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
 bool QOStreamChannelController::eventInit(DeviceController * dev)
 {
     QDeviceController * qdev = (QDeviceController*)dev; //! @attention
@@ -78,4 +43,20 @@ bool QOStreamChannelController::eventInit(DeviceController * dev)
         return false;
 
     return QNodeController::eventInit(dev);
+}
+
+bool QOStreamChannelController::eventData(const ControlPacket &packet)
+{
+    if(_count == 0)
+    {
+        DataPacket<ParamDataIdx> countp(packet);
+        if(!countp.isValid())
+        {
+            logMessage("Invalid count packet");
+            return false;
+        }
+        _count = *countp.get();
+    }
+
+    return true;
 }

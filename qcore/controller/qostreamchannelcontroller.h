@@ -12,30 +12,28 @@ public:
                               const QString & name,
                               QDeviceConnection *dev);
 
-    inline bool isEnabled() const { return _enabled; }
-
-    bool setEnabled(bool enabled);
-
     inline Length_t dataOffset() const { return _dataOffset; }
 
     inline Length_t dataLength() const { return _dataLength; }
+
+    inline ParamDataIdx count() const { return _count; }
 
     virtual void streamDataReceived(Data * data) = 0;
 
 protected:
     virtual bool eventSetup(const ControlPacket & packet) override;
 
-    virtual bool eventData(const ControlPacket & packet) override;
-
     virtual void toggledEvent(bool enabled) { (void)enabled; }
 
     virtual bool eventInit(DeviceController * controller) override;
 
+    virtual bool eventData(const ControlPacket & packet) override;
+
 private:
     NodeID_t            _streamId;
-    bool                _enabled;
     Length_t            _dataOffset;
     Length_t            _dataLength;
+    ParamDataIdx        _count;
 
 signals:
     void toggled(bool enable);

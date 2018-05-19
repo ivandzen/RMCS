@@ -22,17 +22,17 @@ public slots:
         return static_cast<QOParamController*>(channel);
     }
 
-    QVariant popValue(QOParamController * node) {
-        return node->popValue();
-    }
+    //QVariant popValue(QOParamController * node) {
+    //    return node->popValue();
+    //}
 
-    void reset(QOParamController * param) {
-        param->reset();
-    }
+    //void reset(QOParamController * param) {
+    //    param->reset();
+    //}
 
-    void setBufferSize(QOParamController * param, int size) {
-        param->setBufferSize(size);
-    }
+    //void setBufferSize(QOParamController * param, int size) {
+    //    param->setBufferSize(size);
+    //}
 };
 
 #endif // QOPARAMCONTROLLERWRAPPER_H
