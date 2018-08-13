@@ -1,12 +1,16 @@
 #include "usbostreamnode.h"
 #include "rmcsusbdevice.h"
 
+#ifdef ENABLE_USBDEV
+
 UsbOStreamNode::UsbOStreamNode(const char * name,
                                uint8_t ep_num,
-                               RMCSUsbDevice * device) :
+                               RMCSUsbDevice * device,
+							   uint16_t mps) :
     OStreamNode(name,
                 NODE_TYPE_USBOSTREAM,
-                device->rmcsDevice()),
+                device->rmcsDevice(),
+				mps),
     UsbDeviceEP(UsbDeviceEP::EP_ISOC,
                 ep_num | 0x80,
                 EP_ATTRIBUTES,
@@ -21,6 +25,11 @@ UsbDeviceEP::Status UsbOStreamNode::dataIn()
         return OK;
     transmit(ostreamPacket(), packetSize());
     return OK;
+}
+
+void UsbOStreamNode::startOfFrame()
+{
+
 }
 
 bool UsbOStreamNode::settingsRequested(ControlPacket & packet) const
@@ -43,3 +52,5 @@ void UsbOStreamNode::streamToggled(bool enabled)
     if(enabled)
         transmit(ostreamPacket(), packetSize());
 }
+
+#endif

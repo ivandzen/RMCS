@@ -28,10 +28,13 @@ bool DeviceController::init()
 {
     if(_state != STATE_UNDEFINED)   //! возможно еще какие то состояния допустимы
         return false;
-    _state = STATE_INIT;
+    setState(STATE_INIT);
     return requestDeviceControlPacket(CTLREQ_DEV_DESCRIPTOR,
-                                      [this](const ControlPacket & packet)
-                                            { parseDeviceDescriptor(packet); });
+    [this](const ControlPacket & packet, bool success)
+    {
+        if(success) parseDeviceDescriptor(packet);
+        else setState(STATE_ERROR);
+    });
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -44,10 +47,13 @@ bool DeviceController::fullUpdate()
         return false;
     }
     _currentNode = 0;
-    if(requestNodeControlPacket(_currentNode,
-                                CTLREQ_NODE_DATA,
-                                [this](const ControlPacket & packet)
-                                      { parseNodeData(packet); })) return true;
+    if(requestNodeControlPacket(_currentNode, CTLREQ_NODE_DATA,
+    [this](const ControlPacket & packet, bool success)
+    {
+        if(success) parseNodeData(packet);
+        else setState(STATE_ERROR);
+    }))
+        return true;
     warning("Unable to request first Node data");
     return false;
 }
@@ -116,32 +122,32 @@ bool DeviceController::endControlDevTransaction(CtlReq_t type,
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-void DeviceController::backendEventError()
-{
+//void DeviceController::backendEventError()
+//{
 
-}
-
-///////////////////////////////////////////////////////////////////////////////////////
-
-void DeviceController::backendEventTimeout()
-{
-
-}
+//}
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-void DeviceController::backendEventConnLost()
-{
+//void DeviceController::backendEventTimeout()
+//{
 
-}
+//}
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-void DeviceController::backendEventRestart()
-{
-    restartedEvent();
-    init();
-}
+//void DeviceController::backendEventConnLost()
+//{
+
+//}
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+//void DeviceController::backendEventRestart()
+//{
+//    restartedEvent();
+//    init();
+//}
 
 ///////////////////////////////////////////////////////////////////////////////////////
 #include <QDebug>
@@ -161,14 +167,17 @@ void DeviceController::parseDeviceDescriptor(const ControlPacket & packet)
     if(_currentNode == _nodes.size())
     {
         warning("Device contains no nodes");
-        _state = STATE_WORK;
+        setState(STATE_WORK);
         return;
     }
 
-    if(requestNodeControlPacket(_currentNode,
-                                CTLREQ_NODE_DESCRIPTOR,
-                                [this](const ControlPacket & packet)
-                                      { parseNodeDescriptor(packet); })) return;
+    if(requestNodeControlPacket(_currentNode, CTLREQ_NODE_DESCRIPTOR,
+    [this](const ControlPacket & packet, bool success)
+    {
+        if(success) parseNodeDescriptor(packet);
+        else setState(STATE_ERROR);
+    }))
+        return;
 
     error("Unable to request Node descriptor");
 }
@@ -195,23 +204,33 @@ void DeviceController::parseNodeDescriptor(const ControlPacket & packet)
         if(_currentNode == _nodes.size())
         {
             _currentNode = 0;
-            if(requestNodeControlPacket(_currentNode,
-                                        CTLREQ_NODE_SETTINGS,
-                                        [this](const ControlPacket & packet)
-                                              { parseNodeSettings(packet); })) return;
+            if(requestNodeControlPacket(_currentNode, CTLREQ_NODE_SETTINGS,
+               [this](const ControlPacket & packet, bool success)
+               {
+                   if(success) parseNodeSettings(packet);
+                   else setState(STATE_ERROR);
+               })) return;
             error("Node Custom descriptor not requested");
             return;
         }
-        else if(requestNodeControlPacket(_currentNode,
-                                         CTLREQ_NODE_DESCRIPTOR,
-                                         [this](const ControlPacket & packet)
-                                               { parseNodeDescriptor(packet); })) return;
+        else if(requestNodeControlPacket(_currentNode, CTLREQ_NODE_DESCRIPTOR,
+                [this](const ControlPacket & packet, bool success)
+                {
+                    if(success) parseNodeDescriptor(packet);
+                    else setState(STATE_ERROR);
+                })) return;
 
         error("Next Node descriptor not requested");
         return;
     }
 
-    error("Node controller not created.");
+    char msg[1024];
+    sprintf(msg,
+            "Node controller not created. type = %d, id = %d, parentId = %d",
+            descriptor.nodeType(),
+            descriptor.id(),
+            descriptor.parent_id());
+    error(msg);
     return;
 }
 
@@ -231,13 +250,15 @@ void DeviceController::parseNodeSettings(const ControlPacket & packet)
             ++_currentNode)
             _nodes[_currentNode]->init(this);
         afterInitNodes();
-        _state = STATE_WORK;
+        setState(STATE_WORK);
         return;
     }
-    if(requestNodeControlPacket(_currentNode,
-                                CTLREQ_NODE_SETTINGS,
-                                [this](const ControlPacket & packet)
-                                      { parseNodeSettings(packet); })) return;
+    if(requestNodeControlPacket(_currentNode, CTLREQ_NODE_SETTINGS,
+       [this](const ControlPacket & packet, bool success)
+       {
+           if(success) parseNodeSettings(packet);
+           else setState(STATE_ERROR);
+       })) return;
     error("Unable to request next Node settings");
 }
 
@@ -251,14 +272,16 @@ void DeviceController::parseNodeData(const ControlPacket & packet)
     ++_currentNode;
     if(_currentNode == _nodes.size())
     {
-        _state = STATE_WORK;
+        setState(STATE_WORK);
         updatedEvent();
         return;
     }
-    if(requestNodeControlPacket(_currentNode,
-                                CTLREQ_NODE_DATA,
-                                [this](const ControlPacket & packet)
-                                      { parseNodeData(packet); })) return;
+    if(requestNodeControlPacket(_currentNode, CTLREQ_NODE_DATA,
+       [this](const ControlPacket & packet, bool success)
+       {
+            if(success) parseNodeData(packet);
+            else setState(STATE_ERROR);
+       })) return;
     error("Unable to request next Node data");
 }
 
@@ -268,8 +291,8 @@ void DeviceController::error(const char * message)
 {
     (void)message;
     //! @todo
-    _state = STATE_ERROR;
     logMessage(message);
+    setState(STATE_ERROR);
     errorEvent();
     //log(message);
 }
@@ -280,4 +303,19 @@ void DeviceController::warning(const char *message)
 {
     (void)message;
     logMessage(message);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+void DeviceController::setState(DeviceController::DeviceState state)
+{
+    _state = state;
+    switch(_state)
+    {
+    case STATE_UNDEFINED : logMessage("Device is going to undefined state."); break;
+    case STATE_INIT : logMessage("Device is starting init sequence..."); break;
+    case STATE_WORK : logMessage("Device is in working state now."); break;
+    case STATE_ERROR : logMessage("Device encountered error!"); break;
+    case STATE_RESTART : logMessage("Reseting device..."); break;
+    }
 }

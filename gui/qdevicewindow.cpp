@@ -90,6 +90,7 @@ void QDeviceWindow::createForms(QNodeController *node)
 
                     QTableWidgetItem * form_item = new QTableWidgetItem();
                     form_item->setSizeHint(QSize(100, form->minimumHeight()));
+                    ui->tableWidget->setRowHeight(table_row, form->minimumHeight());
                     ui->tableWidget->setItem(table_row, 2, form_item);
 
                     ui->tableWidget->setCellWidget(table_row, 2, form);

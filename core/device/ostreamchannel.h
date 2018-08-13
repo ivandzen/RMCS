@@ -22,27 +22,20 @@ public:
                    Length_t data_size,
                    Device * dev);
 
-    inline bool isEnabled() const { return _enabled; }
-
     inline Length_t dataLength() const { return _length; }
+
+    inline Data * streamPtr() const { return _ostream->ostreamPacket() + _offset; }
 
     inline void write(Data * data)
     {
-        memcpy(_ostream->ostreamPacket() + _offset, data, _length);
+        memcpy(streamPtr(), data, _length);
     }
 
 protected:
     virtual bool settingsRequested(ControlPacket & packet) const override;
 
-    virtual bool nodeDataRequested(ControlPacket & packet) const override;
-
-    virtual bool nodeDataReceived(const ControlPacket & packet) override;
-
-    inline Data * streamPacket() const { return _ostream->ostreamPacket() + _offset; }
-
 private:
     OStreamNode *   _ostream;
-    bool            _enabled;
     Length_t        _offset;
     Length_t        _length;
 };

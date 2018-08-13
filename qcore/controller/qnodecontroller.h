@@ -27,6 +27,8 @@ public:
 
     void update();
 
+    QNodeController * getChild(const QString & name) const;
+
 protected:
     virtual void eventDestroy() override;
 
@@ -35,6 +37,8 @@ protected:
     virtual void eventStatus(NodeStatus_t status) override;
 
     virtual void logMessage(const char * message) override;
+
+    virtual void logMessage(const QString & message);
 
 signals:
     void initialized();

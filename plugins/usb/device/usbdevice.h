@@ -1,6 +1,8 @@
 #ifndef USBDEVICE_H
 #define USBDEVICE_H
 
+#if ENABLE_USBDEV
+
 #include <rmcs_device_conf.h>
 #include <plugins/usb/device/usbdescriptors.h>
 #include <plugins/usb/device/usbdeviceep.h>
@@ -323,5 +325,7 @@ private:
     uint8_t             _max_num_configuration;
     uint8_t             _max_num_interfaces;
 };
+
+#endif
 
 #endif // USBDEVICE_H

@@ -37,7 +37,11 @@ bool QRWPropertyController::set(const QVariant & value)
             return false;
         }
 
-        return submitCtlTransfer(packet, [this](){ update(); });
+        return submitCtlTransfer(packet, [this](bool success)
+        {
+            if(success) update();
+            else logMessage("Unable to set property value. Control transfer not completed");
+        });
     }
 
     case NODE_TYPE_INT_PROP :
@@ -54,7 +58,11 @@ bool QRWPropertyController::set(const QVariant & value)
             return false;
         }
 
-        return submitCtlTransfer(packet, [this](){ update(); });
+        return submitCtlTransfer(packet, [this](bool success)
+        {
+            if(success) update();
+            else logMessage("Unable to set property value. Control transfer not completed");
+        });
     }
 
     case NODE_TYPE_FLOAT_PROP :
@@ -71,7 +79,11 @@ bool QRWPropertyController::set(const QVariant & value)
             return false;
         }
 
-        return submitCtlTransfer(packet, [this](){ update(); });
+        return submitCtlTransfer(packet, [this](bool success)
+        {
+            if(success) update();
+            else logMessage("Unable to set property value. Control transfer not completed");
+        });
     }
 
     default : break;

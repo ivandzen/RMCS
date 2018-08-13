@@ -23,17 +23,22 @@ bool NodeController::readStatus()
 {
     if(!_initialized) return false;
     return _connection->requestCtlPacket(id(), CTLREQ_NODE_STATUS, 2048, //! @todo заменить на константу
-                                         [this](const ControlPacket & packet)
-                                               { statusReceived(packet); });
+                                         [this](const ControlPacket & packet, bool success)
+                                         {
+                                             if(success) statusReceived(packet);
+                                             else logMessage("Unable to read node status");
+                                         });
 }
 
 bool NodeController::readData()
 {
     if(!_initialized) return false;
-    return _connection->requestCtlPacket(id(),
-                                         CTLREQ_NODE_DATA, 2048, //! @todo заменить на константу
-                                         [this](const ControlPacket & packet)
-                                               { (void)eventData(packet); });
+    return _connection->requestCtlPacket(id(), CTLREQ_NODE_DATA, 2048, //! @todo заменить на константу
+                                         [this](const ControlPacket & packet, bool success)
+                                         {
+                                             if(success)(void)eventData(packet);
+                                             else logMessage("Unable to read node data.");
+                                         });
 }
 
 ControlPacket NodeController::beginCtlTransfer()

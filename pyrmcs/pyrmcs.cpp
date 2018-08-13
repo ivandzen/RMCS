@@ -10,13 +10,18 @@
 #include "qrwpropertycontrollerwrapper.h"
 #include "qiparamcontrollerwrapper.h"
 #include "qoparamcontrollerwrapper.h"
+#include "qdevicewindowwrapper.h"
+#include "graphformwrapper.h"
+#include "qint16oparamcontrollerwrapper.h"
 #include "PythonQt.h"
+#include <QDebug>
 
 void PythonRmcs::init()
 {
     PythonQt::self()->registerCPPClass("QRmcs",
-                                       "PythonQt.QtCore.QThread", "Rmcs",
+                                       "", "Rmcs",
                                        PythonQtCreateObject<QRmcsWrapper>);
+
     PythonQt::self()->registerCPPClass("QDeviceControllerFactory",
                                        "PythonQt.QtCore.QObject", "Rmcs",
                                        PythonQtCreateObject<QDeviceControllerFactoryWrapper>);
@@ -47,4 +52,14 @@ void PythonRmcs::init()
     PythonQt::self()->registerCPPClass("QOParamController",
                                        "Rmcs.QNodeController", "Rmcs",
                                        PythonQtCreateObject<QOParamControllerWrapper>);
+    PythonQt::self()->registerCPPClass("QDeviceWindow",
+                                       "", "Rmcs",
+                                       PythonQtCreateObject<QDeviceWindowWrapper>);
+    PythonQt::self()->registerCPPClass("GraphForm",
+                                       "", "Rmcs",
+                                       PythonQtCreateObject<GraphFormWrapper>);
+    PythonQt::self()->registerCPPClass("QInt16OParamController", "", "Rmcs",
+                                       PythonQtCreateObject<QInt16OParamControllerWrapper>);
+
+
 }

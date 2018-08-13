@@ -33,8 +33,6 @@ HEADERS += \
     common/defaultnodes.h \
     device/properties.h \
     device/defaultnode.h \
-    device/rawichannel.h \
-    device/rawochannel.h
 
 SOURCES += \
     common/inputstream.cpp \

@@ -79,3 +79,8 @@ void QDeviceController::afterInitNodes()
 {
     emit initialized();
 }
+
+void QDeviceController::updatedEvent()
+{
+    emit updated();
+}

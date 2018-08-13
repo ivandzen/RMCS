@@ -22,21 +22,14 @@ public:
                    Length_t data_size,
                    Device * dev);
 
-    inline bool isEnabled() const { return _enabled; }
-
     inline Length_t dataLength() const { return _length; }
 
 protected:
     virtual bool settingsRequested(ControlPacket & packet) const override;
 
-    virtual bool nodeDataRequested(ControlPacket & packet) const override;
-
-    virtual bool nodeDataReceived(const ControlPacket & packet) override;
-
     virtual void streamDataReceived(const ArrayRef<Data> & data) = 0;
 
 private:
-    bool            _enabled;
     IStreamNode *   _istream;
     Length_t        _offset;
     Length_t        _length;

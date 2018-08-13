@@ -1,6 +1,8 @@
 #include "usbdeviceep.h"
 #include <plugins/usb/device/usbdevice.h>
 
+#ifdef ENABLE_USBDEVICE
+
 UsbDeviceEP::UsbDeviceEP(UsbDeviceEP::Type type,
                          uint8_t addr,
                          uint8_t attributes,
@@ -12,3 +14,5 @@ UsbDeviceEP::UsbDeviceEP(UsbDeviceEP::Type type,
     _isoInterval(iso_interval),
     _devHandle(device->handle())
 {}
+
+#endif

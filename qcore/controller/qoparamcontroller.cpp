@@ -1,5 +1,6 @@
 #include "qoparamcontroller.h"
 #include <core/common/defaultnodes.h>
+#include <QDebug>
 
 QOParamController::QOParamController(NodeType_t type,
                                      NodeID_t node_id,
@@ -12,72 +13,30 @@ QOParamController::QOParamController(NodeType_t type,
 
 }
 
-QNodeController * QOParamController::createInstance(NodeID_t node_id,
-                                                    NodeID_t parent_id,
-                                                    const QString & name,
-                                                    QDeviceConnection * device)
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+QInt16OParamController::QInt16OParamController(NodeID_t node_id,
+                                               NodeID_t parent_id,
+                                               const QString &name,
+                                               QDeviceConnection *dev) :
+    QOParamController(NODE_TYPE_INT16_OPARAM,
+                      node_id, parent_id, name, dev),
+    _lastId(0),
+    _consumer(nullptr)
+{}
+
+void QInt16OParamController::streamDataReceived(Data * data)
 {
-    return new QOParamController(_type, node_id, parent_id,
-                                 name, device);
-}
+    _ParamData<int16_t> pdata = _ParamData<int16_t>(data, count());
 
-void QOParamController::streamDataReceived(Data * data)
-{
-    switch(_type)
-    {
-    case NODE_TYPE_INT8_OPARAM :
-    {
-        ParamData<int8_t> * pdata = reinterpret_cast<ParamData<int8_t>*>(data);
-        if(pdata->id == _lastId)
-            return;
-        _lastId = pdata->id;
-        _value = QVariant(pdata->value);
-        emit valueChanged(_value);
+    if(!pdata.isValid())
         return;
-    }
 
-    case NODE_TYPE_INT16_OPARAM :
-    {
-        ParamData<int16_t> * pdata = reinterpret_cast<ParamData<int16_t>*>(data);
-        if(pdata->id == _lastId)
-            return;
-        _lastId = pdata->id;
-        _value = QVariant(pdata->value);
-        emit valueChanged(_value);
+    ParamDataID did = pdata.getID();
+    if((did == 0) || (did == _lastId))
         return;
-    }
 
-    case NODE_TYPE_INT32_OPARAM :
-    {
-        ParamData<int32_t> * pdata = reinterpret_cast<ParamData<int32_t>*>(data);
-        if(pdata->id == _lastId)
-            return;
-        _lastId = pdata->id;
-        _value = QVariant(pdata->value);
-        emit valueChanged(_value);
-        return;
-    }
-
-    case NODE_TYPE_FLOAT32_OPARAM :
-    {
-        ParamData<float> * pdata = reinterpret_cast<ParamData<float>*>(data);
-        if(pdata->id == _lastId)
-            return;
-        _lastId = pdata->id;
-        _value = QVariant(pdata->value);
-        emit valueChanged(_value);
-        return;
-    }
-
-    case NODE_TYPE_FLOAT64_OPARAM :
-    {
-        ParamData<double> * pdata = reinterpret_cast<ParamData<double>*>(data);
-        if(pdata->id == _lastId)
-            return;
-        _lastId = pdata->id;
-        _value = QVariant(pdata->value);
-        emit valueChanged(_value);
-        return;
-    }
-    }
+    _lastId = did;
+    if(_consumer)
+        _consumer->execute(pdata);
 }

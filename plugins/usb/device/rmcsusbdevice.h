@@ -1,6 +1,8 @@
 #ifndef RMCSUSBDEVICE_H
 #define RMCSUSBDEVICE_H
 
+#ifdef ENABLE_USBDEV
+
 #include <core/device/device.h>
 #include <plugins/usb/common/common.h>
 #include <plugins/usb/device/usbdevice.h>
@@ -74,5 +76,7 @@ private:
     BOSDesc             _BOSDesc;
 #endif
 };
+
+#endif
 
 #endif //RMCSUSBDEVICE_H

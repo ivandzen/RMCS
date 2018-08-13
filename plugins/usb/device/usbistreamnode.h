@@ -1,5 +1,8 @@
 #ifndef USBISTREAMNODE_H
 #define USBISTREAMNODE_H
+
+#ifdef ENABLE_USBDEVICE
+
 #include <core/device/istreamnode.h>
 #include <plugins/usb/device/usbdeviceep.h>
 
@@ -13,9 +16,12 @@ public:
     UsbIStreamNode(const char * name,
                    uint8_t ep_num,
                    Length_t reserve,
-                   RMCSUsbDevice * device);
+                   RMCSUsbDevice * device,
+				   uint16_t mps);
 
     virtual Status dataOut() override;
+
+    void startOfFrame();
 
 protected:
     virtual bool settingsRequested(ControlPacket & packet) const override;
@@ -29,5 +35,7 @@ private:
     std::vector<Data> _buffer;
     uint8_t    _inPacketCounter;
 };
+
+#endif
 
 #endif //USBISTREAMNODE_H

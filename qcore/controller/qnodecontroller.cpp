@@ -24,6 +24,14 @@ void QNodeController::update()
             child->update();
 }
 
+QNodeController *QNodeController::getChild(const QString &name) const
+{
+    QObjectList olist = children();
+    for(QObject * child : olist)
+        if(child->objectName() == name)
+            return qobject_cast<QNodeController*>(child);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 void QNodeController::eventDestroy()
@@ -59,4 +67,11 @@ void QNodeController::logMessage(const char * message)
                                 .arg(id())
                                 .arg(message);
     qDebug() << formatted; //! @attention еще раз подумать
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void QNodeController::logMessage(const QString & message)
+{
+    logMessage(message.toUtf8().data());
 }

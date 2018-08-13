@@ -15,12 +15,26 @@ public slots:
         return controller->parentId();
     }
 
+    QNodeController * getChild(QNodeController * controller,
+                               const QString & childName) {
+        return controller->getChild(childName);
+    }
+
     QStringList childNames(QNodeController * controller) {
         QStringList result;
         QObjectList children = controller->children();
         for(QObject * obj : children)
             if(QNodeController * child = qobject_cast<QNodeController*>(obj))
                 result.push_back(child->name());
+        return result;
+    }
+
+    QList<NodeID_t> childIds(QNodeController * controller) {
+        QList<NodeID_t> result;
+        QObjectList children = controller->children();
+        for(QObject * obj : children)
+            if(QNodeController * child = qobject_cast<QNodeController*>(obj))
+                result.push_back(child->id());
         return result;
     }
 

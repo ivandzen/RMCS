@@ -12,14 +12,6 @@ public Q_SLOTS:
         return static_cast<QOStreamController*>(node);
     }
 
-    bool isStreamEnabled(QOStreamController * controller) const {
-        return controller->isStreamEnabled();
-    }
-
-    bool setStreamEnabled(QOStreamController * controller, bool enabled) {
-        return controller->setStreamEnabled(enabled);
-    }
-
     uint16_t numChannels(QOStreamController * controller) const {
         return controller->numChannels();
     }
@@ -27,6 +19,16 @@ public Q_SLOTS:
     QOStreamChannelController * getChannel(QOStreamController * controller,
                                            uint16_t number) const {
         return controller->getChannel(number);
+    }
+
+    bool setBufCapacity(QOStreamController * controller,
+                        Length_t cap) {
+        return controller->setBufCapacity(cap);
+    }
+
+    bool setPPT(QOStreamController * controller,
+                Length_t ppt) {
+        return controller->setPPT(ppt);
     }
 };
 

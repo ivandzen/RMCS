@@ -33,7 +33,7 @@ public:
     inline NodeStatus_t nodeStatus() const { return _status; }
 
 protected:
-    virtual bool settingsRequested(ControlPacket & packet) const = 0;
+	virtual bool settingsRequested(ControlPacket & packet) const = 0;
 
     virtual bool nodeDataRequested(ControlPacket &) const = 0;
 

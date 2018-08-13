@@ -1,5 +1,8 @@
 #ifndef USBDEVICEEP_H
 #define USBDEVICEEP_H
+
+#ifdef ENABLE_USBDEVICE
+
 #include <stdint.h>
 #include <plugins/usb/device/usbdescriptors.h>
 #include <usb_otg.h>
@@ -38,7 +41,7 @@ public:
 
     inline uint8_t epAddr() const { return _addr; }
 
-    inline EndpDesc getDescriptor() const
+    inline EndpDesc getUsbDescriptor() const
     {
         EndpDesc desc;
         desc.setByte(EndpDesc::bEndpointAddress, _addr);
@@ -125,5 +128,7 @@ private:
     PCD_HandleTypeDef * _devHandle;
     uint16_t            _status;
 };
+
+#endif
 
 #endif // USBDEVICEEP_H

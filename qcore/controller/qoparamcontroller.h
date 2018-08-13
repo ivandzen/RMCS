@@ -1,7 +1,14 @@
 #ifndef QOPARAMCONTROLLER_H
 #define QOPARAMCONTROLLER_H
 #include <qcore/controller/qostreamchannelcontroller.h>
+#include <functional>
 #include <QVariant>
+#include <QQueue>
+#include <QMutex>
+#include <QVector>
+#include <QDebug>
+
+////////////////////////////////////////////////////////////////////////////////////////////////
 
 class QOParamController :
         public QOStreamChannelController
@@ -14,25 +21,52 @@ public :
                       const QString & name = QString(),
                       QDeviceConnection * dev = nullptr);
 
+    virtual NodeType_t type() const override { return _type; }
+
+private:
+    NodeType_t      _type;
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+class QInt16OParamController :
+        public QOParamController
+{
+    Q_OBJECT
+public:
+    class Consumer
+    {
+    public :
+        virtual void execute(const _ParamData<int16_t> & data) = 0;
+
+        virtual ~Consumer() {}
+    };
+
+    QInt16OParamController(NodeID_t node_id = NodeIDNull,
+                           NodeID_t parent_id = NodeIDNull,
+                           const QString & name = QString(),
+                           QDeviceConnection * dev = nullptr);
+
     virtual QNodeController * createInstance(NodeID_t node_id,
                                              NodeID_t parent_id,
                                              const QString & name,
-                                             QDeviceConnection * device) override;
+                                             QDeviceConnection * device) override
+    {
+        return new QInt16OParamController(node_id, parent_id, name, device);
+    }
 
-    virtual NodeType_t type() const override { return _type; }
-
-    inline QVariant getValue() const { return _value; }
-
-signals :
-    void valueChanged(QVariant value);
+    inline void setConsumer(Consumer * consumer) {
+        _consumer = consumer;
+    }
 
 protected:
-    virtual void streamDataReceived(Data * data) override;
+    virtual void streamDataReceived(Data * data) final override;
 
-private:
-    NodeType_t  _type;
-    uint8_t     _lastId;
-    QVariant    _value;
+protected:
+    ParamDataID _lastId;
+    Consumer *  _consumer;
 };
+
+////////////////////////////////////////////////////////////////////////////////////////////////
 
 #endif // QOPARAMCONTROLLER_H

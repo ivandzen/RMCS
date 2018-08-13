@@ -35,16 +35,19 @@ void QIParamController::fill(ArrayRef<Data> & arr)
         return;
     _ready = false;
 
+    logMessage("QIParamController not ready for work!");
+    assert(false);
+
     switch(_type)
     {
     case NODE_TYPE_INT8_IPARAM :
     {
         if(!_value.canConvert<int8_t>())
             return;
-        ParamData<int8_t> data;
-        data.id = _dataId;
-        data.value = _value.value<int8_t>();
-        arr.copyFrom(reinterpret_cast<Data*>(&data));
+        //ParamData<int8_t> data;
+        //data.id = _dataId;
+        //data.value = _value.value<int8_t>();
+        //arr.copyFrom(reinterpret_cast<Data*>(&data));
         return;
     }
 
@@ -52,10 +55,10 @@ void QIParamController::fill(ArrayRef<Data> & arr)
     {
         if(!_value.canConvert<int16_t>())
             return;
-        ParamData<int16_t> data;
-        data.id = _dataId;
-        data.value = _value.value<int16_t>();
-        arr.copyFrom(reinterpret_cast<Data*>(&data));
+        //ParamData<int16_t> data;
+        //data.id = _dataId;
+        //data.value = _value.value<int16_t>();
+        //arr.copyFrom(reinterpret_cast<Data*>(&data));
         return;
     }
 
@@ -63,10 +66,10 @@ void QIParamController::fill(ArrayRef<Data> & arr)
     {
         if(!_value.canConvert<int32_t>())
             return;
-        ParamData<int32_t> data;
-        data.id = _dataId;
-        data.value = _value.value<int32_t>();
-        arr.copyFrom(reinterpret_cast<Data*>(&data));
+        //ParamData<int32_t> data;
+        //data.id = _dataId;
+        //data.value = _value.value<int32_t>();
+        //arr.copyFrom(reinterpret_cast<Data*>(&data));
         return;
     }
 
@@ -74,10 +77,10 @@ void QIParamController::fill(ArrayRef<Data> & arr)
     {
         if(!_value.canConvert<float>())
             return;
-        ParamData<float> data;
-        data.id = _dataId;
-        data.value = _value.value<float>();
-        arr.copyFrom(reinterpret_cast<Data*>(&data));
+        //ParamData<float> data;
+        //data.id = _dataId;
+        //data.value = _value.value<float>();
+        //arr.copyFrom(reinterpret_cast<Data*>(&data));
         return;
     }
 
@@ -85,10 +88,10 @@ void QIParamController::fill(ArrayRef<Data> & arr)
     {
         if(!_value.canConvert<double>())
             return;
-        ParamData<double> data;
-        data.id = _dataId;
-        data.value = _value.value<double>();
-        arr.copyFrom(reinterpret_cast<Data*>(&data));
+        //ParamData<double> data;
+        //data.id = _dataId;
+        //data.value = _value.value<double>();
+        //arr.copyFrom(reinterpret_cast<Data*>(&data));
         return;
     }
     }

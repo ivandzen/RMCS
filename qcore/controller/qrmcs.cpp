@@ -36,6 +36,7 @@ void QRmcs::init()
     qRegisterMetaType<NodeStatus_t>("NodeStatus_t");
     qRegisterMetaType<Time_t>("Time_t");
     qRegisterMetaType<uint16_t>("uint16_t");
+    qRegisterMetaType<QList<NodeID_t>>("QList<NodeID_t>");
 
     _instance = new QRmcs(nullptr);
     _instance->start();
@@ -86,7 +87,7 @@ QDeviceControllerFactory * QRmcs::loadFactory(const QString & filename)
         return nullptr;
     }
 
-    factory->moveToThread(this);
+    factory->setContext(this);
     return factory;
 }
 
