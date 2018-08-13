@@ -8,7 +8,6 @@
 #ifndef XUSBDEVICE_H_
 #define XUSBDEVICE_H_
 
-#include <plugins/usb/common/common.h>
 #include <plugins/usb/common/usbdescriptors.h>
 #include "XUsbDevice_Config.h"
 
@@ -143,10 +142,6 @@ public:
 					uint8_t max_packet) :
 		XUsbInEndpoint(XUsbEndpoint(UsbEPDescriptor(_inEpData, UsbEPDescriptor::DEFAULT_LENGTH), nullptr)),
 		XUsbOutEndpoint(XUsbEndpoint(UsbEPDescriptor(_outEpData, UsbEPDescriptor::DEFAULT_LENGTH), nullptr)),
-		//XUsbInEndpoint(XUsb//UsbEPDescriptor(_inEpData, UsbEPDescriptor::DEFAULT_LENGTH),
-		//			   UsbEPDescriptor::DEFAULT_LENGTH, 0x80, 0x00, max_packet, 0),
-		//XUsbOutEndpoint(UsbEPDescriptor(_outEpData, UsbEPDescriptor::DEFAULT_LENGTH),
-		//		        UsbEPDescriptor::DEFAULT_LENGTH, 0x00, 0x00, max_packet, 0),
 	    _state(EP0_IDLE),
 	    _inTotalLength(0),
 	    _inRemLength(0),
@@ -222,10 +217,6 @@ protected:
 	virtual bool epDataOut(uint8_t * pdata) final override;
 
 	virtual bool epDataIn(uint8_t * pdata) final override;
-
-	//virtual void isoInIncomplete() final override {}
-
-	//virtual void isoOutIncomplete() final override {}
 
 private:
     typedef enum

@@ -1,10 +1,8 @@
 #include "qusbdevicefactory.h"
 #include <QMutexLocker>
-#include <usb/host/qusbconnection.h>
+#include <usb/host/usbbackend.h>
 #include <qcore/controller/qdevicecontroller.h>
 #include <QDebug>
-#include "qusbistreamcontroller.h"
-#include "qusbostreamcontroller.h"
 
 QUsbCoreThread::QUsbCoreThread(QUsbDeviceFactory *factory) :
     QThread(factory),

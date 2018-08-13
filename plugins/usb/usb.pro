@@ -13,18 +13,14 @@ CONFIG += c++11 plugin
 DESTDIR = $$BUILD_PREFIX/share/rmcs/backends
 
 HEADERS += \
-    host/qusbconnection.h \
     host/qusbdevicefactory.h \
-    host/qusbistreamcontroller.h \
-    host/qusbostreamcontroller.h \
     common/common.h \
-    common/usbdescriptors.h
+    common/usbdescriptors.h \
+    host/usbbackend.h
 
 SOURCES += \
-    host/qusbconnection.cpp \
     host/qusbdevicefactory.cpp \
-    host/qusbistreamcontroller.cpp \
-    host/qusbostreamcontroller.cpp
+    host/usbbackend.cpp
 
 win32 {
     INCLUDEPATH += ../ C:\libusb-1.0.21\include\libusb-1.0

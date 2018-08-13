@@ -45,7 +45,6 @@ void QOStreamProcessor::run()
 
 QOStreamReader::QOStreamReader(uint16_t period,
                                QOStreamController * controller) :
-    QThread(controller),
     _running(false),
     _controller(controller),
     _currentPacket(0),
@@ -126,6 +125,17 @@ QOStreamController::QOStreamController(Length_t buf_cap,
     //! For simplicity
     Q_ASSERT((buf_cap % ppt) == 0);
     _freePackets.release(buf_cap);
+}
+
+QOStreamController::~QOStreamController()
+{
+    _processor->stop();
+    _processor->deleteLater();
+    if(_reader)
+    {
+        _reader->stop();
+        _reader->deleteLater();
+    }
 }
 
 bool QOStreamController::addChannel(QOStreamChannelController * channel)
@@ -216,15 +226,6 @@ bool QOStreamController::eventData(const ControlPacket & packet)
 {
     (void)packet;
     return true;
-}
-
-void QOStreamController::eventDestroy()
-{
-    _processor->stop();
-    _reader->stop();
-    _processor->deleteLater();
-    _reader->deleteLater();
-    QNodeController::eventDestroy();
 }
 
 bool QOStreamController::setPacketSize(Length_t pack_size)

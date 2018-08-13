@@ -38,6 +38,8 @@ public:
     {
     public :
         virtual void execute(const _ParamData<int16_t> & data) = 0;
+
+        virtual ~Consumer() {}
     };
 
     QInt16OParamController(NodeID_t node_id = NodeIDNull,
@@ -54,12 +56,11 @@ public:
     }
 
     inline void setConsumer(Consumer * consumer) {
-        qDebug() << "set Consumer";
         _consumer = consumer;
     }
 
 protected:
-    virtual void streamDataReceived(Data * data) override;
+    virtual void streamDataReceived(Data * data) final override;
 
 protected:
     ParamDataID _lastId;

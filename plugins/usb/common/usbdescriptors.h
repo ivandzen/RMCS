@@ -371,11 +371,24 @@ class UsbClassSpecificDescriptor :
         public UsbDescriptor
 {
 public:
+	enum CSType_t
+	{
+		CS_UNDEFINED 		= 0x20,
+		CS_DEVICE 			= 0x21,
+		CS_CONFIGURATION 	= 0x22,
+		CS_STRING 			= 0x23,
+		CS_INTERFACE 		= 0x24,
+		CS_ENDPOINT 		= 0x25
+	};
+
     UsbClassSpecificDescriptor(uint8_t * data, Length_t length) :
         UsbDescriptor (data, length)
     {}
 
-    inline bool init(uint8_t length, uint8_t type) { return UsbDescriptor::init(length, type); }
+    inline bool init(uint8_t length, CSType_t type)
+    {
+    	return UsbDescriptor::init(length, uint8_t(type));
+    }
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////

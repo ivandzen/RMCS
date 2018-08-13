@@ -46,6 +46,8 @@ public:
 signals:
     void initialized();
 
+    void updated();
+
 protected:
     virtual NodeController * createNode(NodeType_t node_type,
                                         NodeID_t node_id,
@@ -57,6 +59,8 @@ protected:
     virtual void beforeInitNodes() override;
 
     virtual void afterInitNodes() override;
+
+    virtual void updatedEvent() override;
 
 private :
     QWidget *   _form;

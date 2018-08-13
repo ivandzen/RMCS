@@ -10,6 +10,7 @@
 
 #include <plugins/usb/device/XUsbDevice.h>
 #include <core/device/device.h>
+#include <plugins/usb/common/common.h>
 
 
 class RMCSUsbIStreamEP;

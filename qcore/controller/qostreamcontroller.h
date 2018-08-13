@@ -117,6 +117,8 @@ public:
                        const QString & name,
                        QDeviceConnection *conn);
 
+    ~QOStreamController();
+
     inline QRWPropertyController * enabled() { return _enabled; }
 
     bool setBufCapacity(Length_t cap);
@@ -135,8 +137,6 @@ protected:
     virtual bool eventInit(DeviceController * device) final override;
 
     virtual bool eventData(const ControlPacket & packet) final override;
-
-    virtual void eventDestroy() final override;
 
     bool setPacketSize(Length_t pack_size);
 

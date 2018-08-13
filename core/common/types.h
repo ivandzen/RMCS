@@ -30,45 +30,47 @@ public:
     typedef ParamDataID IDType;
     typedef ParamDataIdx IdxType;
 
-	_ParamData(Data * ptr = nullptr, IdxType size = 0) :
-		_ptr(reinterpret_cast<Content*>(ptr)),
-		_size(size)
-	{}
+    _ParamData(Data * ptr = nullptr, IdxType size = 0) :
+        _ptr(reinterpret_cast<Content*>(ptr)),
+        _size(size)
+    {}
 
-	static uint8_t byteSize(IdxType count) { return sizeof(Content) + sizeof(T) * count; }
+    static uint8_t byteSize(IdxType count) { return sizeof(Content) + sizeof(T) * count; }
 
     inline bool isValid() const { return (_ptr != nullptr) && (_size != 0); }
 
-	inline IdxType size() const { return _size; }
+    inline IdxType size() const { return _size; }
 
-	inline void setID(IDType id) { _ptr->id = id; }
+    inline void setID(IDType id) { _ptr->id = id; }
 
-	inline void incID() { ++_ptr->id; }
+    inline void incID() { ++_ptr->id; }
 
-	inline IDType getID() const { return _ptr->id; }
+    inline IDType getID() const { return _ptr->id; }
 
-	inline T get(IdxType idx) const {
-		assert(idx < _size);
-		return _ptr->data[idx];
-	}
+    inline T get(IdxType idx) const
+    {
+        assert(idx < _size);
+        return _ptr->data[idx];
+    }
 
-	inline void set(IdxType idx, T value) {
-		assert(idx < _size);
-		_ptr->data[idx] = value;
-	}
+    inline void set(IdxType idx, T value)
+    {
+        assert(idx < _size);
+        _ptr->data[idx] = value;
+    }
 
     inline T * ptr() const { return _ptr->data; }
 
 private:
-        typedef struct
-		{
-			IDType 	id;
-			T		data[];
-		}
-		Content;
+    typedef struct
+    {
+        IDType 	id;
+        T       data[];
+    }
+    Content;
 
-		Content * 	_ptr;
-		IdxType 	_size;
+    Content *   _ptr;
+    IdxType     _size;
 };
 
 
