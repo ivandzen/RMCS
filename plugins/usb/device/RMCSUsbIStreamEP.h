@@ -7,8 +7,8 @@
 
 #ifndef DEVICE_RMCSUSBISTREAMEP_H_
 #define DEVICE_RMCSUSBISTREAMEP_H_
+#include <XUsbDevice.h>
 #include <core/device/istreamnode.h>
-#include <plugins/usb/device/XUsbDevice.h>
 
 class RMCSUsbIface;
 

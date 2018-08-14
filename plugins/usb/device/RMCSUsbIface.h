@@ -8,7 +8,7 @@
 #ifndef DEVICE_RMCSUSBIFACE_H_
 #define DEVICE_RMCSUSBIFACE_H_
 
-#include <plugins/usb/device/XUsbDevice.h>
+#include <XUsbDevice.h>
 #include <core/device/device.h>
 #include <plugins/usb/common/common.h>
 

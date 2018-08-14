@@ -11,6 +11,15 @@
 #include <QHash>
 #include <QSemaphore>
 
+typedef enum
+{
+    UsbEPType_Control       = 0x00,
+    UsbEPType_Isochronous   = 0x01,
+    UsbEPType_Bulk          = 0x02,
+    UsbEPType_Interrupt     = 0x03
+}
+UsbEPType;
+
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 class QDeviceController;
@@ -94,7 +103,7 @@ class QUSBOStreamReader :
     friend void CALLBACK_ATTRIB ostreamTransferCallback(libusb_transfer * transfer);
 
 public:
-    QUSBOStreamReader(UsbEPDescriptor::EPType_t type,
+    QUSBOStreamReader(UsbEPType type,
                       libusb_device_handle * handle,
                       uint8_t ep_addr,
                       QUsbOStreamController * controller);
@@ -107,7 +116,7 @@ private:
     void transferCplt(struct libusb_transfer * tfer);
 
     struct libusb_transfer * _transfer;
-    UsbEPDescriptor::EPType_t _type;
+    UsbEPType               _type;
     libusb_device_handle *  _handle;
     uint8_t                 _epAddr;
 };
