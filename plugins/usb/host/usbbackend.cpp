@@ -268,7 +268,7 @@ void CALLBACK_ATTRIB ostreamTransferCallback(libusb_transfer * transfer)
     reinterpret_cast<QUSBOStreamReader*>(transfer->user_data)->transferCplt(transfer);
 }
 
-QUSBOStreamReader::QUSBOStreamReader(UsbEPDescriptor::EPType_t type,
+QUSBOStreamReader::QUSBOStreamReader(UsbEPType type,
                                      libusb_device_handle * handle,
                                      uint8_t ep_addr,
                                      QUsbOStreamController * controller) :
@@ -295,7 +295,7 @@ bool QUSBOStreamReader::beginTransfer(char * ptr,
 
     switch(_type)
     {
-    case UsbEPDescriptor::EP_BULK :
+    case UsbEPType_Bulk :
     {
         _transfer = libusb_alloc_transfer(0);
         if(_transfer == nullptr)
@@ -311,7 +311,7 @@ bool QUSBOStreamReader::beginTransfer(char * ptr,
         break;
     }
 
-    case UsbEPDescriptor::EP_ISOC :
+    case UsbEPType_Isochronous :
     {
         _transfer = libusb_alloc_transfer(num_packets);
         if(_transfer == nullptr)
@@ -330,8 +330,8 @@ bool QUSBOStreamReader::beginTransfer(char * ptr,
         break;
     }
 
-    case UsbEPDescriptor::EP_CTRL :
-    case UsbEPDescriptor::EP_INTR :
+    case UsbEPType_Control :
+    case UsbEPType_Interrupt :
         logMessage("Stream supported only on Bulk and Isochronous endpoints");
         return false;
     }
@@ -350,16 +350,16 @@ void QUSBOStreamReader::transferCplt(libusb_transfer * tfer)
 
     switch(_type)
     {
-    case UsbEPDescriptor::EP_BULK :
+    case UsbEPType_Bulk :
         ready_packets = _transfer->actual_length / packetSize();
         break;
 
-    case UsbEPDescriptor::EP_ISOC :
+    case UsbEPType_Isochronous :
         ready_packets = _transfer->num_iso_packets;
         break;
 
-    case UsbEPDescriptor::EP_CTRL :
-    case UsbEPDescriptor::EP_INTR :
+    case UsbEPType_Control :
+    case UsbEPType_Interrupt :
         logMessage("Stream supported only on Bulk and Isochronous endpoints");
         return;
     }
@@ -467,7 +467,7 @@ bool QUsbOStreamController::eventSetup(const ControlPacket & packet)
     for(uint8_t ep_num = 0; ep_num < iface->bNumEndpoints; ++ep_num)
         if(iface->endpoint[ep_num].bEndpointAddress == settings.epAddr())
         {
-            UsbEPDescriptor::EPType_t ep_type = UsbEPDescriptor::EPType_t (iface->endpoint[ep_num].bmAttributes & 0x03);
+            UsbEPType ep_type = UsbEPType (iface->endpoint[ep_num].bmAttributes & 0x03);
             bool result = setReader(new QUSBOStreamReader(ep_type, _handle, settings.epAddr(), this));
             if(!result)
                 logMessage("QUsbOStreamReader not created!");

@@ -9,6 +9,10 @@
 #include <plugins/usb/device/RMCSUsbIface.h>
 #include <plugins/usb/common/common.h>
 
+#define USBSTREAM_EP_ATTRIBUTES (UsbEPDescriptor::EP_BULK | \
+                       	   	   	 UsbEPDescriptor::SYNC_MODE_NONE | \
+								 UsbEPDescriptor::USAGE_MODE_DATA)
+
 RMCSUsbOStreamEP::RMCSUsbOStreamEP(const XUsbEndpoint & source,
 		 	 	 	 	 	 	   const char * name,
 								   uint8_t epnum,

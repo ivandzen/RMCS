@@ -7,8 +7,8 @@
 
 #ifndef DEVICE_RMCSUSBOSTREAMEP_H_
 #define DEVICE_RMCSUSBOSTREAMEP_H_
+#include <XUsbDevice.h>
 #include <core/device/ostreamnode.h>
-#include <plugins/usb/device/XUsbDevice.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
